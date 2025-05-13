@@ -1,0 +1,27 @@
+erDiagram
+    DEVELOPERS ||--o{ TASKS : "выполняет (1-M)"
+    PROJECTS ||--o{ TASKS : "содержит (1-M)"
+    
+    DEVELOPERS {
+        int id PK "Первичный ключ"
+        string full_name "ФИО разработчика"
+        string position "Должность (backend, frontend, QA)"
+        float hourly_rate "Ставка в час"
+    }
+    
+    PROJECTS {
+        int id PK "Первичный ключ"
+        string name "Название проекта"
+        string client "Клиент"
+        date deadline "Срок сдачи"
+        float budget "Бюджет"
+    }
+    
+    TASKS {
+        int id PK "Первичный ключ"
+        int project_id FK "Внешний ключ к проекту"
+        int developer_id FK "Внешний ключ к разработчику"
+        string description "Описание задачи"
+        string status "Статус (в работе/завершено)"
+        float hours_worked "Часы работы"
+    }
