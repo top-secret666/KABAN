@@ -13,7 +13,6 @@ def init_database(db_path='database/kabanmanagement_it-projects.sqlite', sql_pat
             print(f"Ошибка: SQL-файл '{sql_path}' не найден")
             return False
 
-        # Читаем SQL-скрипт из файла
         with open(sql_path, 'r', encoding='utf-8') as sql_file:
             sql_script = sql_file.read()
 
@@ -55,7 +54,10 @@ def test_connection(db_path='database/kabanmanagement_it-projects.sqlite'):
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    db_path = os.path.join(script_dir, '..', 'kabanmanagement_it-projects.sqlite')
+    db_folder = os.path.join(script_dir, '..', 'database')
+    if not os.path.exists(db_folder):
+        os.makedirs(db_folder)
+    db_path = os.path.join(db_folder, 'kabanmanagement_it-projects.sqlite')
     sql_path = os.path.join(script_dir, 'kaban.sql')
 
     if init_database(db_path, sql_path):
