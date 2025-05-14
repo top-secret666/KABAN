@@ -1,8 +1,7 @@
-from base_model import BaseModel
 from db_manager import DBManager
 
 
-class Developer(BaseModel):
+class Developer:
     def __init__(self, id=None, full_name="", position="", hourly_rate=0):
         self.id = id
         self.full_name = full_name

@@ -1,8 +1,7 @@
-from base_model import BaseModel
 from db_manager import DBManager
 
 
-class Task(BaseModel):
+class Task:
     def __init__(self, id=None, project_id=None, developer_id=None, description="", status="в работе", hours_worked=0):
         self.id = id
         self.project_id = project_id

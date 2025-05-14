@@ -1,9 +1,8 @@
-from base_model import BaseModel
 from db_manager import DBManager
 from datetime import datetime
 
 
-class Project(BaseModel):
+class Project:
     def __init__(self, id=None, name="", client="", deadline="", budget=0):
         self.id = id
         self.name = name
