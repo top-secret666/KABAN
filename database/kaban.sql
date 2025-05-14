@@ -186,3 +186,54 @@ DROP INDEX IF EXISTS idx_tasks_project_developer;
 DROP INDEX IF EXISTS idx_tasks_status_hours;
 CREATE INDEX idx_tasks_project_developer ON tasks (project_id, developer_id);
 CREATE INDEX idx_tasks_status_hours ON tasks (status, hours_worked);
+
+-- =============================================
+-- Триггеры для предотвращения дублирования записей
+-- =============================================
+
+DROP TRIGGER IF EXISTS upsert_developer;
+CREATE TRIGGER upsert_developer
+BEFORE INSERT ON developers
+WHEN EXISTS (SELECT 1 FROM developers WHERE full_name = NEW.full_name)
+BEGIN
+    UPDATE developers
+    SET position = NEW.position,
+        hourly_rate = NEW.hourly_rate
+    WHERE full_name = NEW.full_name;
+
+    SELECT raise(IGNORE);
+END;
+
+DROP TRIGGER IF EXISTS upsert_project;
+CREATE TRIGGER upsert_project
+BEFORE INSERT ON projects
+WHEN EXISTS (SELECT 1 FROM projects WHERE name = NEW.name AND client = NEW.client)
+BEGIN
+    UPDATE projects
+    SET deadline = NEW.deadline,
+        budget = NEW.budget,
+        status = COALESCE(NEW.status, 'в работе')
+    WHERE name = NEW.name AND client = NEW.client;
+
+    SELECT raise(IGNORE);
+END;
+
+DROP TRIGGER IF EXISTS upsert_task;
+CREATE TRIGGER upsert_task
+BEFORE INSERT ON tasks
+WHEN EXISTS (
+    SELECT 1 FROM tasks
+    WHERE project_id = NEW.project_id
+    AND developer_id = NEW.developer_id
+    AND description = NEW.description
+)
+BEGIN
+    UPDATE tasks
+    SET status = NEW.status,
+        hours_worked = NEW.hours_worked
+    WHERE project_id = NEW.project_id
+    AND developer_id = NEW.developer_id
+    AND description = NEW.description;
+
+    SELECT raise(IGNORE);
+END;
