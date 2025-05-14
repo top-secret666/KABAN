@@ -197,6 +197,142 @@ class TestDatabase(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertGreater(result['salary'], 0)
 
+    def test_upsert_developer_trigger(self):
+        """Test that the upsert_developer trigger prevents duplicates and updates existing records"""
+        # Get an existing developer
+        self.cursor.execute("SELECT * FROM developers LIMIT 1")
+        existing_dev = dict(self.cursor.fetchone())
+
+        # Try to insert a developer with the same name but different details
+        new_hourly_rate = existing_dev['hourly_rate'] + 100
+        new_position = 'QA' if existing_dev['position'] != 'QA' else 'backend'
+
+        self.cursor.execute(
+            "INSERT INTO developers (full_name, position, hourly_rate) VALUES (?, ?, ?)",
+            (existing_dev['full_name'], new_position, new_hourly_rate)
+        )
+        self.__class__.conn.commit()
+
+        # Check that the record was updated instead of duplicated
+        self.cursor.execute("SELECT COUNT(*) FROM developers WHERE full_name = ?",
+                            (existing_dev['full_name'],))
+        count = self.cursor.fetchone()[0]
+        self.assertEqual(count, 1, "Should have only one record with this name")
+
+        # Check that the values were updated
+        self.cursor.execute("SELECT * FROM developers WHERE full_name = ?",
+                            (existing_dev['full_name'],))
+        updated_dev = dict(self.cursor.fetchone())
+        self.assertEqual(updated_dev['position'], new_position)
+        self.assertEqual(updated_dev['hourly_rate'], new_hourly_rate)
+
+    def test_upsert_project_trigger(self):
+        """Test that the upsert_project trigger prevents duplicates and updates existing records"""
+        # Get an existing project
+        self.cursor.execute("SELECT * FROM projects LIMIT 1")
+        existing_proj = dict(self.cursor.fetchone())
+
+        # Try to insert a project with the same name and client but different details
+        new_deadline = '2025-01-01'
+        new_budget = existing_proj['budget'] + 100000
+
+        self.cursor.execute(
+            "INSERT INTO projects (name, client, deadline, budget) VALUES (?, ?, ?, ?)",
+            (existing_proj['name'], existing_proj['client'], new_deadline, new_budget)
+        )
+        self.__class__.conn.commit()
+
+        # Check that the record was updated instead of duplicated
+        self.cursor.execute("SELECT COUNT(*) FROM projects WHERE name = ? AND client = ?",
+                            (existing_proj['name'], existing_proj['client']))
+        count = self.cursor.fetchone()[0]
+        self.assertEqual(count, 1, "Should have only one record with this name and client")
+
+        # Check that the values were updated
+        self.cursor.execute("SELECT * FROM projects WHERE name = ? AND client = ?",
+                            (existing_proj['name'], existing_proj['client']))
+        updated_proj = dict(self.cursor.fetchone())
+        self.assertEqual(updated_proj['deadline'], new_deadline)
+        self.assertEqual(updated_proj['budget'], new_budget)
+
+    def test_upsert_task_trigger(self):
+        self.cursor.execute("SELECT * FROM tasks LIMIT 1")
+        existing_task = dict(self.cursor.fetchone())
+
+        new_status = 'завершено' if existing_task['status'] == 'в работе' else 'в работе'
+        new_hours = existing_task['hours_worked'] + 5
+
+        self.cursor.execute(
+            """INSERT INTO tasks 
+               (project_id, developer_id, description, status, hours_worked) 
+               VALUES (?, ?, ?, ?, ?)""",
+            (existing_task['project_id'], existing_task['developer_id'],
+             existing_task['description'], new_status, new_hours)
+        )
+        self.__class__.conn.commit()
+
+        self.cursor.execute(
+            """SELECT COUNT(*) FROM tasks 
+               WHERE project_id = ? AND developer_id = ? AND description = ?""",
+            (existing_task['project_id'], existing_task['developer_id'],
+             existing_task['description'])
+        )
+        count = self.cursor.fetchone()[0]
+        self.assertEqual(count, 1, "Should have only one record with this project, developer and description")
+
+        self.cursor.execute(
+            """SELECT * FROM tasks 
+               WHERE project_id = ? AND developer_id = ? AND description = ?""",
+            (existing_task['project_id'], existing_task['developer_id'],
+             existing_task['description'])
+        )
+        updated_task = dict(self.cursor.fetchone())
+        self.assertEqual(updated_task['status'], new_status)
+        self.assertEqual(updated_task['hours_worked'], new_hours)
+
+    def test_insert_new_records_still_works(self):
+        """Test that we can still insert completely new records"""
+        new_dev_name = "Тестовый Разработчик"
+        self.cursor.execute(
+            "INSERT INTO developers (full_name, position, hourly_rate) VALUES (?, ?, ?)",
+            (new_dev_name, 'backend', 2000)
+        )
+        self.__class__.conn.commit()
+
+        self.cursor.execute("SELECT * FROM developers WHERE full_name = ?", (new_dev_name,))
+        new_dev = self.cursor.fetchone()
+        self.assertIsNotNone(new_dev)
+
+        new_project_name = "Тестовый проект"
+        new_client = "Тестовый клиент"
+        self.cursor.execute(
+            "INSERT INTO projects (name, client, deadline, budget) VALUES (?, ?, ?, ?)",
+            (new_project_name, new_client, '2025-12-31', 300000)
+        )
+        self.__class__.conn.commit()
+
+        self.cursor.execute("SELECT * FROM projects WHERE name = ? AND client = ?",
+                            (new_project_name, new_client))
+        new_project = self.cursor.fetchone()
+        self.assertIsNotNone(new_project)
+
+        new_task_desc = "Тестовая задача"
+        self.cursor.execute(
+            """INSERT INTO tasks 
+               (project_id, developer_id, description, status, hours_worked) 
+               VALUES (?, ?, ?, ?, ?)""",
+            (new_project['id'], new_dev['id'], new_task_desc, 'в работе', 1)
+        )
+        self.__class__.conn.commit()
+
+        self.cursor.execute(
+            """SELECT * FROM tasks 
+               WHERE project_id = ? AND developer_id = ? AND description = ?""",
+            (new_project['id'], new_dev['id'], new_task_desc)
+        )
+        new_task = self.cursor.fetchone()
+        self.assertIsNotNone(new_task)
+
     def test_project_progress(self):
         self.cursor.execute("SELECT id FROM projects LIMIT 1")
         project_id = self.cursor.fetchone()[0]
