@@ -1,4 +1,4 @@
-from src.main.service.export_service import ExportService
+from src.main.service.export import ExportService
 from src.main.service.exceptions import BusinessException
 import os
 from datetime import datetime
