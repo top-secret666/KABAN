@@ -40,29 +40,46 @@ class ProjectService:
             raise BusinessException(f"Ошибка при получении проекта: {str(e)}")
 
     def create_project(self, data):
-
         try:
             validated_data = ProjectValidator.validate(data)
 
-            project = Project(
-                name=validated_data['name'],
-                client=validated_data['client'],
-                deadline=validated_data.get('deadline'),
-                budget=validated_data.get('budget', 0)
-            )
+            query = "SELECT id FROM projects WHERE name = ? AND client = ?"
+            cursor = self.execute_query(query, [validated_data['name'], validated_data['client']])
+            existing_project = cursor.fetchone()
 
-            success, error = project.save()
-            if not success:
-                raise BusinessException(f"Не удалось создать проект: {error}")
+            if existing_project:
+                project_id = existing_project[0]
+                project = Project.get_by_id(project_id)
 
-            return project
+                if 'deadline' in validated_data:
+                    project.deadline = validated_data['deadline']
+                if 'budget' in validated_data:
+                    project.budget = validated_data['budget']
+
+                success, error = project.save()
+                if not success:
+                    raise BusinessException(f"Не удалось обновить существующий проект: {error}")
+
+                return project
+            else:
+                project = Project(
+                    name=validated_data['name'],
+                    client=validated_data['client'],
+                    deadline=validated_data.get('deadline'),
+                    budget=validated_data.get('budget', 0)
+                )
+
+                success, error = project.save()
+                if not success:
+                    raise BusinessException(f"Не удалось создать проект: {error}")
+
+                return project
         except Exception as e:
             if isinstance(e, (BusinessException, ValidationException, DatabaseException)):
                 raise e
-            raise BusinessException(f"Ошибка при создании проекта: {str(e)}")
+            raise BusinessException(f"Ошибка при создании/обновлении проекта: {str(e)}")
 
     def update_project(self, project_id, data):
-
         try:
             project = self.get_project_by_id(project_id)
             if not project:

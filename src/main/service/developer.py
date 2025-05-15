@@ -38,34 +38,60 @@ class DeveloperService:
         try:
             validated_data = DeveloperValidator.validate(data)
 
-            developer = Developer(
-                full_name=validated_data['full_name'],
-                position=validated_data['position'],
-                hourly_rate=validated_data.get('hourly_rate', 0)
-            )
+            query = "SELECT id FROM developers WHERE full_name = ?"
+            cursor = self.execute_query(query, [validated_data['full_name']])
+            existing_developer = cursor.fetchone()
 
-            success, error = developer.save()
-            if not success:
-                raise BusinessException(f"Не удалось создать разработчика: {error}")
+            if existing_developer:
+                developer_id = existing_developer[0]
+                developer = Developer.get_by_id(developer_id)
 
-            return developer
+                if 'position' in validated_data:
+                    developer.position = validated_data['position']
+                if 'hourly_rate' in validated_data:
+                    developer.hourly_rate = validated_data['hourly_rate']
+
+                success, error = developer.save()
+                if not success:
+                    raise BusinessException(f"Не удалось обновить существующего разработчика: {error}")
+
+                return developer
+            else:
+                developer = Developer(
+                    full_name=validated_data['full_name'],
+                    position=validated_data['position'],
+                    hourly_rate=validated_data.get('hourly_rate', 0)
+                )
+
+                success, error = developer.save()
+                if not success:
+                    raise BusinessException(f"Не удалось создать разработчика: {error}")
+
+                return developer
         except Exception as e:
             if isinstance(e, (BusinessException, ValidationException, DatabaseException)):
                 raise e
-            raise BusinessException(f"Ошибка при создании разработчика: {str(e)}")
+            raise BusinessException(f"Ошибка при создании/обновлении разработчика: {str(e)}")
 
     def update_developer(self, developer_id, data):
+        """
+        Обновляет данные разработчика
+        """
         try:
+            # Получение разработчика
             developer = self.get_developer_by_id(developer_id)
             if not developer:
-                raise BusinessException(f"Разработчик с ID {developer_id} не найден")
+                raise BusinessException(f"Разр��ботчик с ID {developer_id} не найден")
 
+            # Валидация данных
             validated_data = DeveloperValidator.validate(data)
 
+            # Обновление полей
             developer.full_name = validated_data['full_name']
             developer.position = validated_data['position']
             developer.hourly_rate = validated_data.get('hourly_rate', developer.hourly_rate)
 
+            # Сохранение изменений
             success, error = developer.save()
             if not success:
                 raise BusinessException(f"Не удалось обновить разработчика: {error}")

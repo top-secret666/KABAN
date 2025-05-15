@@ -66,23 +66,51 @@ class TaskService:
                 if not developer:
                     raise BusinessException(f"Разработчик с ID {validated_data['developer_id']} не найден")
 
-            task = Task(
-                project_id=validated_data['project_id'],
-                developer_id=validated_data.get('developer_id'),
-                description=validated_data['description'],
-                status=validated_data.get('status', 'новая'),
-                hours_worked=validated_data.get('hours_worked', 0)
-            )
+            query = """
+                SELECT id FROM tasks 
+                WHERE project_id = ? AND description = ? 
+                AND (developer_id = ? OR (developer_id IS NULL AND ? IS NULL))
+            """
+            cursor = self.execute_query(query, [
+                validated_data['project_id'],
+                validated_data['description'],
+                validated_data.get('developer_id'),
+                validated_data.get('developer_id')
+            ])
+            existing_task = cursor.fetchone()
 
-            success, error = task.save()
-            if not success:
-                raise BusinessException(f"Не удалось создать задачу: {error}")
+            if existing_task:
+                task_id = existing_task[0]
+                task = Task.get_by_id(task_id)
 
-            return task
+                if 'status' in validated_data:
+                    task.status = validated_data['status']
+                if 'hours_worked' in validated_data:
+                    task.hours_worked = validated_data['hours_worked']
+
+                success, error = task.save()
+                if not success:
+                    raise BusinessException(f"Не удалось обновить существующую задачу: {error}")
+
+                return task
+            else:
+                task = Task(
+                    project_id=validated_data['project_id'],
+                    developer_id=validated_data.get('developer_id'),
+                    description=validated_data['description'],
+                    status=validated_data.get('status', 'новая'),
+                    hours_worked=validated_data.get('hours_worked', 0)
+                )
+
+                success, error = task.save()
+                if not success:
+                    raise BusinessException(f"Не удалось создать задачу: {error}")
+
+                return task
         except Exception as e:
             if isinstance(e, (BusinessException, ValidationException, DatabaseException)):
                 raise e
-            raise BusinessException(f"Ошибка при создании задачи: {str(e)}")
+            raise BusinessException(f"Ошибка при создании/обновлении задачи: {str(e)}")
 
     def update_task(self, task_id, data):
         try:
@@ -109,6 +137,7 @@ class TaskService:
                     if not developer:
                         raise BusinessException(f"Разработчик с ID {validated_data['developer_id']} не найден")
 
+            # Обновление полей
             task.project_id = validated_data['project_id']
             task.developer_id = validated_data.get('developer_id')
             task.description = validated_data['description']
@@ -124,7 +153,6 @@ class TaskService:
             if isinstance(e, (BusinessException, ValidationException, DatabaseException)):
                 raise e
             raise BusinessException(f"Ошибка при обновлении задачи: {str(e)}")
-
     def delete_task(self, task_id):
         try:
             task = self.get_task_by_id(task_id)
