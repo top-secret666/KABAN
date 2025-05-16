@@ -61,7 +61,6 @@ class DatabaseManager:
             self.connection.close()
 
     def init_users_table(self):
-        # Create users table if it doesn't exist
         query = """
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,10 +73,8 @@ class DatabaseManager:
         """
         self.execute_query(query)
 
-        # Check if admin user exists, if not create one
         admin = self.fetch_one("SELECT * FROM users WHERE username = ?", ("admin",))
         if not admin:
-            # Create default admin user (password: admin)
             password_hash = hashlib.sha256("admin".encode()).hexdigest()
             self.execute_query(
                 "INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)",
@@ -99,7 +96,6 @@ class LoginDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        # Form layout
         form_layout = QFormLayout()
 
         self.username_edit = QLineEdit()
@@ -109,7 +105,6 @@ class LoginDialog(QDialog):
         form_layout.addRow("Имя пользователя:", self.username_edit)
         form_layout.addRow("Пароль:", self.password_edit)
 
-        # Buttons
         button_layout = QHBoxLayout()
         self.login_button = QPushButton("Войти")
         self.login_button.clicked.connect(self.login)
@@ -119,7 +114,6 @@ class LoginDialog(QDialog):
         button_layout.addWidget(self.login_button)
         button_layout.addWidget(self.cancel_button)
 
-        # Add layouts to main layout
         layout.addLayout(form_layout)
         layout.addLayout(button_layout)
 
@@ -133,10 +127,8 @@ class LoginDialog(QDialog):
             QMessageBox.warning(self, "Предупреждение", "Пожалуйста, введите имя пользователя и пароль")
             return
 
-        # Hash the password
         password_hash = hashlib.sha256(password.encode()).hexdigest()
 
-        # Check credentials
         user = self.db_manager.fetch_one(
             "SELECT * FROM users WHERE username = ? AND password_hash = ?",
             (username, password_hash)
@@ -161,7 +153,6 @@ class UserManagementDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        # User table
         self.user_table = QTableWidget()
         self.user_table.setColumnCount(5)
         self.user_table.setHorizontalHeaderLabels(["ID", "Имя пользователя", "Полное имя", "Роль", "Дата создания"])
@@ -169,7 +160,6 @@ class UserManagementDialog(QDialog):
         self.user_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.user_table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        # Buttons
         button_layout = QHBoxLayout()
         self.add_button = QPushButton("Добавить пользователя")
         self.add_button.clicked.connect(self.add_user)
@@ -185,13 +175,11 @@ class UserManagementDialog(QDialog):
         button_layout.addWidget(self.delete_button)
         button_layout.addWidget(self.close_button)
 
-        # Add widgets to layout
         layout.addWidget(self.user_table)
         layout.addLayout(button_layout)
 
         self.setLayout(layout)
 
-        # Load users
         self.load_users()
 
     def load_users(self):
@@ -234,7 +222,6 @@ class UserManagementDialog(QDialog):
         user_id = int(self.user_table.item(row, 0).text())
         username = self.user_table.item(row, 1).text()
 
-        # Don't allow deleting the admin user
         if username == "admin":
             QMessageBox.warning(self, "Предупреждение", "Невозможно удалить администратора системы")
             return
@@ -268,7 +255,6 @@ class UserDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        # Form layout
         form_layout = QFormLayout()
 
         self.username_edit = QLineEdit()
@@ -283,12 +269,10 @@ class UserDialog(QDialog):
         form_layout.addRow("Полное имя:", self.fullname_edit)
         form_layout.addRow("Роль:", self.role_combo)
 
-        # Buttons
         button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         button_box.accepted.connect(self.save_user)
         button_box.rejected.connect(self.reject)
 
-        # Add layouts to main layout
         layout.addLayout(form_layout)
         layout.addWidget(QLabel("* - обязательные поля"))
         layout.addWidget(button_box)
@@ -302,7 +286,6 @@ class UserDialog(QDialog):
             self.fullname_edit.setText(user['full_name'] or "")
             self.role_combo.setCurrentText(user['role'])
 
-            # Password field is empty when editing
             self.password_edit.setPlaceholderText("Оставьте пустым, чтобы не менять")
 
     def save_user(self):
@@ -316,8 +299,8 @@ class UserDialog(QDialog):
             return
 
         try:
-            if self.user_id:  # Update existing user
-                if password:  # Only update password if provided
+            if self.user_id:
+                if password:
                     password_hash = hashlib.sha256(password.encode()).hexdigest()
                     self.db_manager.execute_query(
                         "UPDATE users SET username = ?, password_hash = ?, full_name = ?, role = ? WHERE id = ?",
@@ -328,7 +311,7 @@ class UserDialog(QDialog):
                         "UPDATE users SET username = ?, full_name = ?, role = ? WHERE id = ?",
                         (username, fullname, role, self.user_id)
                     )
-            else:  # Create new user
+            else:
                 if not password:
                     QMessageBox.warning(self, "Предупреждение", "Пожалуйста, введите пароль")
                     return
@@ -354,10 +337,8 @@ class DeveloperForm(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        # Create form layout
         form_layout = QFormLayout()
 
-        # Create form fields
         self.name_edit = QLineEdit()
         self.position_combo = QComboBox()
         self.position_combo.addItems(['backend', 'frontend', 'QA'])
@@ -366,12 +347,10 @@ class DeveloperForm(QWidget):
         self.rate_spin.setSingleStep(100)
         self.rate_spin.setValue(1000)
 
-        # Add fields to form
         form_layout.addRow("ФИО:", self.name_edit)
         form_layout.addRow("Должность:", self.position_combo)
         form_layout.addRow("Почасовая ставка:", self.rate_spin)
 
-        # Create buttons
         button_layout = QHBoxLayout()
         self.add_button = QPushButton("Добавить")
         self.update_button = QPushButton("Обновить")
@@ -385,7 +364,6 @@ class DeveloperForm(QWidget):
         button_layout.addWidget(self.clear_button)
         button_layout.addWidget(self.export_button)
 
-        # Create table
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["ID", "ФИО", "Должность", "Ставка"])
@@ -393,7 +371,6 @@ class DeveloperForm(QWidget):
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        # Create search layout
         search_layout = QHBoxLayout()
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Поиск по ФИО...")
@@ -404,7 +381,6 @@ class DeveloperForm(QWidget):
         search_layout.addWidget(self.search_button)
         search_layout.addWidget(self.reset_search_button)
 
-        # Main layout
         main_layout = QVBoxLayout()
         form_group = QGroupBox("Данные разработчика")
         form_group.setLayout(form_layout)
@@ -416,7 +392,6 @@ class DeveloperForm(QWidget):
 
         self.setLayout(main_layout)
 
-        # Connect signals
         self.add_button.clicked.connect(self.add_developer)
         self.update_button.clicked.connect(self.update_developer)
         self.delete_button.clicked.connect(self.delete_developer)
@@ -426,7 +401,6 @@ class DeveloperForm(QWidget):
         self.search_button.clicked.connect(self.search_developers)
         self.reset_search_button.clicked.connect(self.load_developers)
 
-        # Load initial data
         self.load_developers()
 
     def load_developers(self):
@@ -452,19 +426,16 @@ class DeveloperForm(QWidget):
             return
 
         try:
-            # Check if developer with this name already exists
             existing = self.db_manager.fetch_one(
                 "SELECT id FROM developers WHERE full_name = ?",
                 (name,)
             )
 
             if existing:
-                # Update existing developer
                 query = "UPDATE developers SET position = ?, hourly_rate = ? WHERE id = ?"
                 self.db_manager.execute_query(query, (position, rate, existing['id']))
                 QMessageBox.information(self, "Успех", "Данные существующего разработчика обновлены")
             else:
-                # Insert new developer
                 query = "INSERT INTO developers (full_name, position, hourly_rate) VALUES (?, ?, ?)"
                 self.db_manager.execute_query(query, (name, position, rate))
                 QMessageBox.information(self, "Успех", "Разработчик успешно добавлен")
@@ -501,7 +472,6 @@ class DeveloperForm(QWidget):
             QMessageBox.warning(self, "Предупреждение", "Пожалуйста, выберите разработчика для удаления")
             return
 
-        # Check if developer has tasks
         tasks = self.db_manager.fetch_all("SELECT COUNT(*) as count FROM tasks WHERE developer_id = ?",
                                           (self.current_id,))
         if tasks and tasks[0]['count'] > 0:
@@ -560,10 +530,8 @@ class DeveloperForm(QWidget):
 
             with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
-                # Write header
                 writer.writerow(['ID', 'ФИО', 'Должность', 'Почасовая ставка'])
 
-                # Write data
                 for developer in developers:
                     writer.writerow([
                         developer['id'],
@@ -585,10 +553,8 @@ class ProjectForm(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        # Create form layout
         form_layout = QFormLayout()
 
-        # Create form fields
         self.name_edit = QLineEdit()
         self.client_edit = QLineEdit()
         self.deadline_edit = QDateEdit()
@@ -599,13 +565,11 @@ class ProjectForm(QWidget):
         self.budget_spin.setSingleStep(10000)
         self.budget_spin.setValue(100000)
 
-        # Add fields to form
         form_layout.addRow("Название проекта:", self.name_edit)
         form_layout.addRow("Клиент:", self.client_edit)
         form_layout.addRow("Срок сдачи:", self.deadline_edit)
         form_layout.addRow("Бюджет:", self.budget_spin)
 
-        # Create buttons
         button_layout = QHBoxLayout()
         self.add_button = QPushButton("Добавить")
         self.update_button = QPushButton("Обновить")
@@ -619,7 +583,6 @@ class ProjectForm(QWidget):
         button_layout.addWidget(self.clear_button)
         button_layout.addWidget(self.export_button)
 
-        # Create table
         self.table = QTableWidget()
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["ID", "Название", "Клиент", "Срок сдачи", "Бюджет"])
@@ -628,7 +591,6 @@ class ProjectForm(QWidget):
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        # Create search layout
         search_layout = QHBoxLayout()
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Поиск по названию или клиенту...")
@@ -639,7 +601,6 @@ class ProjectForm(QWidget):
         search_layout.addWidget(self.search_button)
         search_layout.addWidget(self.reset_search_button)
 
-        # Main layout
         main_layout = QVBoxLayout()
         form_group = QGroupBox("Данные проекта")
         form_group.setLayout(form_layout)
@@ -651,7 +612,6 @@ class ProjectForm(QWidget):
 
         self.setLayout(main_layout)
 
-        # Connect signals
         self.add_button.clicked.connect(self.add_project)
         self.update_button.clicked.connect(self.update_project)
         self.delete_button.clicked.connect(self.delete_project)
@@ -661,7 +621,6 @@ class ProjectForm(QWidget):
         self.search_button.clicked.connect(self.search_projects)
         self.reset_search_button.clicked.connect(self.load_projects)
 
-        # Load initial data
         self.load_projects()
 
     def load_projects(self):
@@ -676,7 +635,6 @@ class ProjectForm(QWidget):
             self.table.setItem(row, 1, QTableWidgetItem(project['name']))
             self.table.setItem(row, 2, QTableWidgetItem(project['client']))
 
-            # Format date
             deadline = QDate.fromString(project['deadline'], "yyyy-MM-dd")
             self.table.setItem(row, 3, QTableWidgetItem(deadline.toString("dd.MM.yyyy")))
 
@@ -693,19 +651,16 @@ class ProjectForm(QWidget):
             return
 
         try:
-            # Check if project with this name and client already exists
             existing = self.db_manager.fetch_one(
                 "SELECT id FROM projects WHERE name = ? AND client = ?",
                 (name, client)
             )
 
             if existing:
-                # Update existing project
                 query = "UPDATE projects SET deadline = ?, budget = ? WHERE id = ?"
                 self.db_manager.execute_query(query, (deadline, budget, existing['id']))
                 QMessageBox.information(self, "Успех", "Данные существующего проекта обновлены")
             else:
-                # Insert new project
                 query = "INSERT INTO projects (name, client, deadline, budget, status) VALUES (?, ?, ?, ?, 'в работе')"
                 self.db_manager.execute_query(query, (name, client, deadline, budget))
                 QMessageBox.information(self, "Успех", "Проект успешно добавлен")
@@ -743,7 +698,6 @@ class ProjectForm(QWidget):
             QMessageBox.warning(self, "Предупреждение", "Пожалуйста, выберите проект для удаления")
             return
 
-        # Check if project has tasks
         tasks = self.db_manager.fetch_all("SELECT COUNT(*) as count FROM tasks WHERE project_id = ?",
                                           (self.current_id,))
         if tasks and tasks[0]['count'] > 0:
@@ -760,9 +714,7 @@ class ProjectForm(QWidget):
                 return
 
         try:
-            # Delete tasks first
             self.db_manager.execute_query("DELETE FROM tasks WHERE project_id = ?", (self.current_id,))
-            # Then delete project
             self.db_manager.execute_query("DELETE FROM projects WHERE id = ?", (self.current_id,))
             self.load_projects()
             self.clear_form()
@@ -776,7 +728,6 @@ class ProjectForm(QWidget):
         self.name_edit.setText(self.table.item(row, 1).text())
         self.client_edit.setText(self.table.item(row, 2).text())
 
-        # Parse date
         date_str = self.table.item(row, 3).text()
         date = QDate.fromString(date_str, "dd.MM.yyyy")
         self.deadline_edit.setDate(date)
@@ -815,10 +766,8 @@ class ProjectForm(QWidget):
 
             with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
-                # Write header
                 writer.writerow(['ID', 'Название', 'Клиент', 'Срок сдачи', 'Бюджет', 'Статус'])
 
-                # Write data
                 for project in projects:
                     deadline = QDate.fromString(project['deadline'], "yyyy-MM-dd").toString("dd.MM.yyyy")
                     writer.writerow([
@@ -843,10 +792,8 @@ class TaskForm(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        # Create form layout
         form_layout = QFormLayout()
 
-        # Create form fields
         self.project_combo = QComboBox()
         self.developer_combo = QComboBox()
         self.description_edit = QLineEdit()
@@ -856,14 +803,12 @@ class TaskForm(QWidget):
         self.hours_spin.setRange(0, 1000)
         self.hours_spin.setSingleStep(0.5)
 
-        # Add fields to form
         form_layout.addRow("Проект:", self.project_combo)
         form_layout.addRow("Разработчик:", self.developer_combo)
         form_layout.addRow("Описание:", self.description_edit)
         form_layout.addRow("Статус:", self.status_combo)
         form_layout.addRow("Затраченные часы:", self.hours_spin)
 
-        # Create buttons
         button_layout = QHBoxLayout()
         self.add_button = QPushButton("Добавить")
         self.update_button = QPushButton("Обновить")
@@ -877,7 +822,6 @@ class TaskForm(QWidget):
         button_layout.addWidget(self.clear_button)
         button_layout.addWidget(self.export_button)
 
-        # Create table
         self.table = QTableWidget()
         self.table.setColumnCount(6)
         self.table.setHorizontalHeaderLabels(["ID", "Проект", "Разработчик", "Описание", "Статус", "Часы"])
@@ -885,7 +829,6 @@ class TaskForm(QWidget):
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
         self.table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        # Create search layout
         search_layout = QHBoxLayout()
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Поиск по описанию...")
@@ -902,7 +845,6 @@ class TaskForm(QWidget):
         search_layout.addWidget(self.search_button)
         search_layout.addWidget(self.reset_search_button)
 
-        # Main layout
         main_layout = QVBoxLayout()
         form_group = QGroupBox("Данные задачи")
         form_group.setLayout(form_layout)
@@ -914,7 +856,6 @@ class TaskForm(QWidget):
 
         self.setLayout(main_layout)
 
-        # Connect signals
         self.add_button.clicked.connect(self.add_task)
         self.update_button.clicked.connect(self.update_task)
         self.delete_button.clicked.connect(self.delete_task)
@@ -924,12 +865,10 @@ class TaskForm(QWidget):
         self.search_button.clicked.connect(self.search_tasks)
         self.reset_search_button.clicked.connect(self.load_tasks)
 
-        # Load initial data
         self.load_projects_and_developers()
         self.load_tasks()
 
     def load_projects_and_developers(self):
-        # Load projects
         self.project_combo.clear()
         self.project_filter.clear()
         self.project_filter.addItem("Все проекты", None)
@@ -939,7 +878,6 @@ class TaskForm(QWidget):
             self.project_combo.addItem(project['name'], project['id'])
             self.project_filter.addItem(project['name'], project['id'])
 
-        # Load developers
         self.developer_combo.clear()
         self.developer_filter.clear()
         self.developer_filter.addItem("Все разработчики", None)
@@ -973,7 +911,6 @@ class TaskForm(QWidget):
             self.table.setItem(row, 4, QTableWidgetItem(task['status']))
             self.table.setItem(row, 5, QTableWidgetItem(str(task['hours_worked'])))
 
-            # Store additional data
             self.table.item(row, 1).setData(Qt.UserRole, task['project_id'])
             self.table.item(row, 2).setData(Qt.UserRole, task['developer_id'])
 
@@ -989,19 +926,16 @@ class TaskForm(QWidget):
             return
 
         try:
-            # Check if task with this project, developer and description already exists
             existing = self.db_manager.fetch_one(
                 "SELECT id FROM tasks WHERE project_id = ? AND developer_id = ? AND description = ?",
                 (project_id, developer_id, description)
             )
 
             if existing:
-                # Update existing task
                 query = "UPDATE tasks SET status = ?, hours_worked = ? WHERE id = ?"
                 self.db_manager.execute_query(query, (status, hours, existing['id']))
                 QMessageBox.information(self, "Успех", "Данные существующей задачи обновлены")
             else:
-                # Insert new task
                 query = """
                     INSERT INTO tasks (project_id, developer_id, description, status, hours_worked) 
                     VALUES (?, ?, ?, ?, ?)
@@ -1065,11 +999,9 @@ class TaskForm(QWidget):
         row = item.row()
         self.current_id = int(self.table.item(row, 0).text())
 
-        # Get project and developer IDs from hidden data
         project_id = self.table.item(row, 1).data(Qt.UserRole)
         developer_id = self.table.item(row, 2).data(Qt.UserRole)
 
-        # Set combobox values
         index = self.project_combo.findData(project_id)
         if index >= 0:
             self.project_combo.setCurrentIndex(index)
@@ -1147,13 +1079,11 @@ class TaskForm(QWidget):
 
             with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
-                # Write header
                 writer.writerow([
                     'ID', 'Проект', 'Разработчик', 'Описание', 'Статус',
                     'Часы', 'Ставка', 'Стоимость'
                 ])
 
-                # Write data
                 for task in tasks:
                     writer.writerow([
                         task['id'],
@@ -1180,7 +1110,6 @@ class StatisticsTab(QWidget):
     def init_ui(self):
         main_layout = QVBoxLayout()
 
-        # Project statistics
         project_group = QGroupBox("Статистика по проектам")
         project_layout = QVBoxLayout()
 
@@ -1200,7 +1129,6 @@ class StatisticsTab(QWidget):
         project_layout.addWidget(export_project_button)
         project_group.setLayout(project_layout)
 
-        # Developer statistics
         developer_group = QGroupBox("Статистика по разработчикам")
         developer_layout = QVBoxLayout()
 
@@ -1219,7 +1147,6 @@ class StatisticsTab(QWidget):
         developer_layout.addWidget(export_developer_button)
         developer_group.setLayout(developer_layout)
 
-        # Refresh button
         refresh_button = QPushButton("Обновить статистику")
         refresh_button.clicked.connect(self.load_statistics)
 
@@ -1229,7 +1156,6 @@ class StatisticsTab(QWidget):
 
         self.setLayout(main_layout)
 
-        # Load initial data
         self.load_statistics()
 
     def load_statistics(self):
@@ -1259,7 +1185,6 @@ class StatisticsTab(QWidget):
             self.project_table.setItem(row, 0, QTableWidgetItem(project['name']))
             self.project_table.setItem(row, 1, QTableWidgetItem(project['client']))
 
-            # Format date
             deadline = QDate.fromString(project['deadline'], "yyyy-MM-dd")
             self.project_table.setItem(row, 2, QTableWidgetItem(deadline.toString("dd.MM.yyyy")))
 
@@ -1271,7 +1196,6 @@ class StatisticsTab(QWidget):
             labor_cost = project['labor_cost'] if project['labor_cost'] else 0
             self.project_table.setItem(row, 5, QTableWidgetItem(f"{labor_cost:.2f}"))
 
-            # Color row if over budget
             if labor_cost > project['budget']:
                 for col in range(6):
                     self.project_table.item(row, col).setBackground(QColor(255, 200, 200))
@@ -1331,13 +1255,11 @@ class StatisticsTab(QWidget):
 
             with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
-                # Write header
                 writer.writerow([
                     'ID', 'Название', 'Клиент', 'Срок сдачи', 'Бюджет',
                     'Всего задач', 'Выполнено задач', 'Общие часы', 'Затраты', 'Остаток бюджета'
                 ])
 
-                # Write data
                 for project in projects:
                     deadline = QDate.fromString(project['deadline'], "yyyy-MM-dd").toString("dd.MM.yyyy")
                     labor_cost = project['labor_cost'] if project['labor_cost'] else 0
@@ -1386,13 +1308,11 @@ class StatisticsTab(QWidget):
 
             with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
                 writer = csv.writer(csvfile)
-                # Write header
                 writer.writerow([
                     'ID', 'ФИО', 'Должность', 'Ставка',
                     'Всего задач', 'Выполнено задач', 'Общие часы', 'Заработок'
                 ])
 
-                # Write data
                 for developer in developers:
                     total_hours = developer['total_hours'] if developer['total_hours'] else 0
                     earnings = developer['earnings'] if developer['earnings'] else 0
@@ -1424,35 +1344,28 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Kanban Management System")
         self.setGeometry(100, 100, 1200, 800)
 
-        # Create menu bar
         self.create_menu_bar()
 
-        # Create tab widget
         self.tab_widget = QTabWidget()
 
-        # Create tabs
         self.developer_tab = DeveloperForm(self.db_manager)
         self.project_tab = ProjectForm(self.db_manager)
         self.task_tab = TaskForm(self.db_manager)
         self.statistics_tab = StatisticsTab(self.db_manager)
 
-        # Add tabs to widget
         self.tab_widget.addTab(self.developer_tab, "Разработчики")
         self.tab_widget.addTab(self.project_tab, "Проекты")
         self.tab_widget.addTab(self.task_tab, "Задачи")
         self.tab_widget.addTab(self.statistics_tab, "Статистика")
 
-        # Set central widget
         self.setCentralWidget(self.tab_widget)
 
-        # Set window title with user info
         if self.user:
             self.setWindowTitle(f"Kanban Management System - {self.user['full_name']} ({self.user['username']})")
 
     def create_menu_bar(self):
         menubar = self.menuBar()
 
-        # File menu
         file_menu = menubar.addMenu("Файл")
 
         export_action = QAction("Экспорт всех данных", self)
@@ -1465,7 +1378,6 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
-        # Admin menu (only for admin users)
         if self.user and self.user['role'] == 'admin':
             admin_menu = menubar.addMenu("Администрирование")
 
@@ -1473,7 +1385,6 @@ class MainWindow(QMainWindow):
             users_action.triggered.connect(self.manage_users)
             admin_menu.addAction(users_action)
 
-        # Help menu
         help_menu = menubar.addMenu("Справка")
 
         about_action = QAction("О программе", self)
@@ -1481,13 +1392,11 @@ class MainWindow(QMainWindow):
         help_menu.addAction(about_action)
 
     def export_all_data(self):
-        # Create a folder for export
         folder_path = QFileDialog.getExistingDirectory(self, "Выберите папку для экспорта")
         if not folder_path:
             return
 
         try:
-            # Export developers
             developers_path = os.path.join(folder_path, "developers.csv")
             developers = self.db_manager.fetch_all("SELECT * FROM developers ORDER BY full_name")
 
@@ -1502,7 +1411,6 @@ class MainWindow(QMainWindow):
                         developer['hourly_rate']
                     ])
 
-            # Export projects
             projects_path = os.path.join(folder_path, "projects.csv")
             projects = self.db_manager.fetch_all("SELECT * FROM projects ORDER BY deadline")
 
@@ -1520,7 +1428,6 @@ class MainWindow(QMainWindow):
                         project['status']
                     ])
 
-            # Export tasks
             tasks_path = os.path.join(folder_path, "tasks.csv")
             query = """
                 SELECT t.id, p.name as project_name, d.full_name as developer_name,
@@ -1574,16 +1481,12 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    # Create database manager
     db_manager = DatabaseManager()
 
-    # Show login dialog
     login_dialog = LoginDialog(db_manager)
     if login_dialog.exec_() == QDialog.Accepted:
-        # If login successful, show main window
         window = MainWindow(login_dialog.authenticated_user)
         window.show()
         sys.exit(app.exec_())
     else:
-        # If login canceled, exit application
         sys.exit(0)

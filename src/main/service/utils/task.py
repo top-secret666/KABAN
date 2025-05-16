@@ -1,8 +1,7 @@
-from validation.base_validator import BaseValidator
-from exceptions import ValidationException
+from src.main.service.exceptions import ValidationException
 
 
-class TaskValidator(BaseValidator):
+class TaskValidator:
     @classmethod
     def validate(cls, data):
         if not isinstance(data, dict):

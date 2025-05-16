@@ -1,4 +1,3 @@
-BEGIN TRANSACTION;
 PRAGMA foreign_keys = ON;
 
 -- =============================================
@@ -86,7 +85,6 @@ CREATE TABLE IF NOT EXISTS notifications (
 -- Создание индексов для ускорения запросов
 -- =============================================
 CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users (role);
 
 CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions (session_token);
@@ -107,8 +105,6 @@ CREATE INDEX IF NOT EXISTS idx_developers_user_id ON developers (user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications (is_read);
 CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications (created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_related ON notifications (related_id, related_type);
-CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id);
-
 -- =============================================
 -- Создание представлений (Views) для удобства работы
 -- =============================================

@@ -1,9 +1,9 @@
-from auth_service import AuthService
+from .auth_service import AuthService
 
 
 class AuthController:
     def __init__(self, service=None):
-        super().__init__(service or AuthService())
+        self.service = service or AuthService()
 
     def login(self, username, password):
         return self.execute_service_method('login', username, password)
@@ -25,3 +25,13 @@ class AuthController:
 
     def change_password(self, user_id, old_password, new_password):
         return self.execute_service_method('change_password', user_id, old_password, new_password)
+
+def execute_service_method(self, method_name, *args, **kwargs):
+    try:
+        method = getattr(self.service, method_name)
+        result = method(*args, **kwargs)
+        return {'success': True, 'data': result}
+    except Exception as e:
+        import logging
+        logging.error(f"Ошибка в {method_name}: {str(e)}")
+        return {'success': False, 'error_message': str(e)}

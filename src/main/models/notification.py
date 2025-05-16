@@ -1,4 +1,4 @@
-from db_manager import DBManager
+from .db_manager import DBManager
 from datetime import datetime
 
 

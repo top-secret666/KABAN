@@ -1,9 +1,8 @@
-from validation.base_validator import BaseValidator
-from exceptions import ValidationException
+from src.main.service.exceptions import ValidationException
 from datetime import datetime
 
 
-class ProjectValidator(BaseValidator):
+class ProjectValidator:
     @classmethod
     def validate(cls, data):
 

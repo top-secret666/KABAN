@@ -1,6 +1,6 @@
 from src.main.models import Task, Developer, Project
-from utils import TaskValidator
-from exceptions import BusinessException, ValidationException, DatabaseException
+from .utils import TaskValidator
+from .exceptions import BusinessException, ValidationException, DatabaseException
 
 
 class TaskService:

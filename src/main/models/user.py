@@ -1,4 +1,4 @@
-from db_manager import DBManager
+from .db_manager import DBManager
 import hashlib
 import os
 from datetime import datetime

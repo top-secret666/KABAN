@@ -1,4 +1,4 @@
-from exceptions import ValidationException
+from src.main.service.exceptions import ValidationException
 
 
 class DeveloperValidator:

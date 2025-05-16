@@ -1,6 +1,6 @@
 from src.main.models import Project, Task
-from utils import ProjectValidator
-from exceptions import BusinessException, ValidationException, DatabaseException
+from .utils import ProjectValidator
+from .exceptions import BusinessException, ValidationException, DatabaseException
 from datetime import datetime
 
 

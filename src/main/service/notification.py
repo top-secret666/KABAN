@@ -1,5 +1,5 @@
 from src.main.models.notification import Notification
-from exceptions import BusinessException, ValidationException, DatabaseException
+from .exceptions import BusinessException, ValidationException, DatabaseException
 from datetime import datetime, timedelta
 
 

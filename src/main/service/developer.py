@@ -1,6 +1,6 @@
 from src.main.models import Developer
-from utils import DeveloperValidator
-from exceptions import BusinessException, ValidationException, DatabaseException
+from .utils import DeveloperValidator
+from .exceptions import BusinessException, ValidationException, DatabaseException
 
 
 class DeveloperService:
