@@ -3,6 +3,10 @@ from src.main.service.exceptions import BusinessException, ValidationException, 
 
 
 class AuthService:
+    def __init__(self, db_manager=None):
+        # Initialize db_manager in the constructor
+        self.db_manager = db_manager
+
     def login(self, username, password):
         try:
             if not username or not password:
