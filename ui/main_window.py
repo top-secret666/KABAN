@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 
 from ui.resources.styles import GLOBAL_STYLE
+from ui.tabs.admin_tab import AdminTab
 from ui.tabs.dashboard_tab import DashboardTab
 from ui.tabs.developers_tab import DevelopersTab
 from ui.tabs.projects_tab import ProjectsTab
@@ -63,6 +64,11 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.reports_tab, QIcon('ui/resources/icons/app_icon.png'), 'Отчеты')
         self.tab_widget.addTab(self.settings_tab, QIcon('ui/resources/icons/app_icon.png'), 'Настройки')
 
+        # Добавление вкладки администрирования только для администраторов
+        if self.user.role == 'admin':
+            self.admin_tab = AdminTab(self.user)
+            self.tab_widget.addTab(self.admin_tab, QIcon('ui/resources/icons/app_icon.png'), 'Администрирование')
+
         main_layout.addWidget(self.tab_widget)
 
         # Создание меню
@@ -84,27 +90,20 @@ class MainWindow(QMainWindow):
         # Меню "Файл"
         file_menu = self.menuBar().addMenu('Файл')
 
-        # Действие "Экспорт"
-        export_action = QAction(QIcon('ui/resources/icons/logo.png'), 'Экспорт', self)
-        export_action.setShortcut('Ctrl+E')
-        export_action.setStatusTip('Экспорт данных')
-
-        # Подменю "Экспорт"
-        export_menu = QMenu('Экспорт', self)
-        export_csv_action = QAction('Экспорт в CSV', self)
+        # Действие "Экспорт в CSV"
+        export_csv_action = QAction(QIcon('ui/resources/icons/logo.png'), 'Экспорт в CSV', self)
+        export_csv_action.setShortcut('Ctrl+1')
+        export_csv_action.setStatusTip('Экспорт данных в CSV')
         export_csv_action.triggered.connect(self.export_to_csv)
-        export_excel_action = QAction('Экспорт в Excel', self)
+
+        # Действие "Экспорт в Excel"
+        export_excel_action = QAction(QIcon('ui/resources/icons/logo.png'), 'Экспорт в Excel', self)
+        export_excel_action.setShortcut('Ctrl+2')
+        export_excel_action.setStatusTip('Экспорт данных в Excel')
         export_excel_action.triggered.connect(self.export_to_excel)
 
-        export_menu.addAction(export_csv_action)
-        export_menu.addAction(export_excel_action)
-        export_action.setMenu(export_menu)
-
-        # Действие "Импорт"
-        import_action = QAction(QIcon('ui/resources/icons/logo.png'), 'Импорт', self)
-        import_action.setShortcut('Ctrl+I')
-        import_action.setStatusTip('Импорт данных')
-        import_action.triggered.connect(self.import_data)
+        file_menu.addAction(export_csv_action)
+        file_menu.addAction(export_excel_action)
 
         # Действие "Выход"
         exit_action = QAction(QIcon('ui/resources/icons/app_icon.png'), 'Выход', self)
@@ -112,8 +111,6 @@ class MainWindow(QMainWindow):
         exit_action.setStatusTip('Выход из приложения')
         exit_action.triggered.connect(self.close)
 
-        file_menu.addAction(export_action)
-        file_menu.addAction(import_action)
         file_menu.addSeparator()
         file_menu.addAction(exit_action)
 
@@ -296,16 +293,6 @@ class MainWindow(QMainWindow):
             current_tab.export_to_excel()
         else:
             self.statusbar.showMessage('Функция экспорта в Excel не поддерживается на этой вкладке', 3000)
-
-    def import_data(self):
-        """
-        Импорт данных
-        """
-        current_tab = self.tab_widget.currentWidget()
-        if hasattr(current_tab, 'import_data'):
-            current_tab.import_data()
-        else:
-            self.statusbar.showMessage('Функция импорта не поддерживается на этой вкладке', 3000)
 
     def toggle_fullscreen(self, checked):
         """

@@ -189,56 +189,64 @@ class TasksTab(QWidget):
         # Очистка таблицы
         self.tasks_table.setRowCount(0)
 
-        # Получение списка задач
-        result = self.task_controller.get_all_tasks()
+        try:
+            # Если пользователь - разработчик, показываем только его задачи
+            if self.user.role == 'developer':
+                result = self.task_controller.get_tasks_by_developer(self.user.id)
+            else:
+                # Для менеджеров и администраторов показываем все задачи
+                result = self.task_controller.get_all_tasks()
 
-        print(f"Результат запроса задач: {result}")
+            print(f"Результат запроса задач: {result}")
 
-        if result['success']:
-            tasks = result['data']
-            for i, task in enumerate(tasks):
-                print(f"Задача {i + 1}: ID={task.id}, Описание={task.description}, Статус={task.status}")
+            if result['success']:
+                tasks = result['data']
 
-                self.tasks_table.insertRow(i)
+                for i, task in enumerate(tasks):
+                    print(f"Задача {i + 1}: ID={task.id}, Описание={task.description}, Статус={task.status}")
 
-                # Заполнение ячеек таблицы
-                id_item = QTableWidgetItem(str(task.id))
-                project_name = getattr(task, 'project_name', 'Неизвестный проект')
-                project_item = QTableWidgetItem(project_name)
-                developer_name = getattr(task, 'developer_name', 'Не назначен')
-                developer_item = QTableWidgetItem(developer_name)
-                description_item = QTableWidgetItem(task.description)
-                status_item = QTableWidgetItem(task.status)
-                hours_item = QTableWidgetItem(str(task.hours_worked))
-                created_at = getattr(task, 'created_at', '')
-                created_item = QTableWidgetItem(created_at)
+                    self.tasks_table.insertRow(i)
 
-                # Сохраняем ID проекта и разработчика в пользовательских данных
-                id_item.setData(Qt.UserRole, task.id)
-                project_item.setData(Qt.UserRole, task.project_id)
-                developer_item.setData(Qt.UserRole, task.developer_id)
+                    # Заполнение ячеек таблицы
+                    id_item = QTableWidgetItem(str(task.id))
+                    project_name = getattr(task, 'project_name', 'Неизвестный проект')
+                    project_item = QTableWidgetItem(project_name)
+                    developer_name = getattr(task, 'developer_name', 'Не назначен')
+                    developer_item = QTableWidgetItem(developer_name)
+                    description_item = QTableWidgetItem(task.description)
+                    status_item = QTableWidgetItem(task.status)
+                    hours_item = QTableWidgetItem(str(task.hours_worked))
+                    created_at = getattr(task, 'created_at', '')
+                    created_item = QTableWidgetItem(created_at)
 
-                self.tasks_table.setItem(i, 0, id_item)
-                self.tasks_table.setItem(i, 1, project_item)
-                self.tasks_table.setItem(i, 2, developer_item)
-                self.tasks_table.setItem(i, 3, description_item)
-                self.tasks_table.setItem(i, 4, status_item)
-                self.tasks_table.setItem(i, 5, hours_item)
-                self.tasks_table.setItem(i, 6, created_item)
+                    # Сохраняем ID проекта и разработчика в пользовательских данных
+                    id_item.setData(Qt.UserRole, task.id)
+                    project_item.setData(Qt.UserRole, task.project_id)
+                    developer_item.setData(Qt.UserRole, task.developer_id)
 
-                # Установка цвета фона в зависимости от статуса
-                status_color = {
-                    'новая': '#E3F2FD',
-                    'в работе': '#FFF8E1',
-                    'на проверке': '#F3E5F5',
-                    'завершено': '#E8F5E9'
-                }.get(task.status, '#FFFFFF')
+                    self.tasks_table.setItem(i, 0, id_item)
+                    self.tasks_table.setItem(i, 1, project_item)
+                    self.tasks_table.setItem(i, 2, developer_item)
+                    self.tasks_table.setItem(i, 3, description_item)
+                    self.tasks_table.setItem(i, 4, status_item)
+                    self.tasks_table.setItem(i, 5, hours_item)
+                    self.tasks_table.setItem(i, 6, created_item)
 
-                # Устанавливаем цвет фона только для созданных ячеек (столбцы 0-6)
-                for col in range(7):  # Используем 7 вместо self.tasks_table.columnCount()
-                    item = self.tasks_table.item(i, col)
-                    if item:  # Проверяем, что элемент существует
-                        item.setBackground(QColor(status_color))
+                    # Установка цвета фона в зависимости от статуса
+                    status_color = {
+                        'новая': '#E3F2FD',
+                        'в работе': '#FFF8E1',
+                        'на проверке': '#F3E5F5',
+                        'завершено': '#E8F5E9'
+                    }.get(task.status, '#FFFFFF')
+
+                    # Устанавливаем цвет фона только для созданных ячеек (столбцы 0-6)
+                    for col in range(7):  # Используем 7 вместо self.tasks_table.columnCount()
+                        item = self.tasks_table.item(i, col)
+                        if item:  # Проверяем, что элемент существует
+                            item.setBackground(QColor(status_color))
+        except Exception as e:
+            print(f"Ошибка при обновлении таблицы: {e}")
 
     def apply_filters(self):
         """

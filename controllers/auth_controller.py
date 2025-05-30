@@ -28,13 +28,20 @@ class AuthController(BaseController):
         Получает пользователя по ID
         """
         return self.execute_service_method('get_user_by_id', user_id)
-    
+
     def get_all_users(self):
         """
         Получает список всех пользователей
+
+        Returns:
+            dict: Словарь с результатом операции
         """
-        return self.execute_service_method('get_all_users')
-    
+        try:
+            users = self.service.get_all_users()
+            return {'success': True, 'data': users}
+        except Exception as e:
+            return {'success': False, 'error_message': str(e)}
+
     def update_user(self, user_id, data):
         """
         Обновляет данные пользователя
