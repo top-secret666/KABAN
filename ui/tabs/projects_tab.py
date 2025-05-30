@@ -135,8 +135,28 @@ class ProjectsTab(QWidget):
         # Очистка таблицы
         self.projects_table.setRowCount(0)
 
-        # Получение списка проектов
-        result = self.project_controller.get_all_projects()
+        # Получение списка проектов в зависимости от роли пользователя
+        if self.user.role == 'developer':
+            # Для разработчика показываем только его проекты
+            # Сначала получаем ID разработчика по ID пользователя
+            from controllers import DeveloperController
+            developer_controller = DeveloperController()
+
+            developer_result = developer_controller.get_developer_by_user_id(self.user.id)
+
+            if developer_result['success'] and developer_result['data']:
+                developer = developer_result['data']
+                print(f"Найден разработчик для пользователя {self.user.id}: {developer.full_name} (ID: {developer.id})")
+                # Теперь используем ID разработчика для получения проектов
+                result = self.project_controller.get_projects_by_developer(developer.id)
+            else:
+                # Если разработчик не найден, показываем пустой список
+                print(f"Разработчик для пользователя {self.user.id} не найден")
+                result = {'success': True, 'data': []}
+        else:
+            # Для менеджеров и администраторов показываем все проекты
+            result = self.project_controller.get_all_projects()
+
         print(f"Результат запроса проектов: {result}")
 
         if result['success']:
@@ -146,7 +166,6 @@ class ProjectsTab(QWidget):
                 print(f"ID: {project.id}, Название: {project.name}, Клиент: {project.client}, Бюджет: {project.budget}")
 
             # Заполнение таблицы
-
             for row, project in enumerate(projects):
                 self.projects_table.insertRow(row)
 
@@ -164,8 +183,7 @@ class ProjectsTab(QWidget):
                 self.projects_table.setItem(row, 3, deadline_item)
                 self.projects_table.setItem(row, 4, budget_item)
                 self.projects_table.setItem(row, 5, status_item)
-            DBManager.check_projects_status()
-            DBManager.check_table_structure()
+
             # Обновление списка клиентов для фильтра
             self.update_client_filter(projects)
 

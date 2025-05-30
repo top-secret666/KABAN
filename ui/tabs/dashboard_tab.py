@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-                             QFrame, QScrollArea, QSizePolicy, QGridLayout)
+                             QFrame, QScrollArea, QSizePolicy, QGridLayout, QTabWidget)
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt, QSize
+from PySide6.QtAsyncio import tasks
 
 from controllers import ProjectController, TaskController, DeveloperController, NotificationController
 
@@ -66,6 +67,20 @@ class DashboardTab(QWidget):
         scroll_area.setWidget(scroll_content)
         main_layout.addWidget(scroll_area)
 
+    def show_all_tasks(self):
+        """
+        Показать все задачи (переключение на вкладку задач)
+        """
+        # Находим индекс вкладки с задачами и переключаемся на нее
+        parent = self.parent()
+        if parent:
+            tab_widget = parent.parent()
+            if isinstance(tab_widget, QTabWidget):
+                for i in range(tab_widget.count()):
+                    if tab_widget.tabText(i) == 'Задачи':
+                        tab_widget.setCurrentIndex(i)
+                        break
+
     def create_stats_widgets(self):
         """
         Создание виджетов со статистикой
@@ -73,14 +88,32 @@ class DashboardTab(QWidget):
         stats_layout = QGridLayout()
         stats_layout.setSpacing(20)
 
-        # Получение данных
-        projects_result = self.project_controller.get_all_projects()
-        tasks_result = self.task_controller.get_all_tasks()
-        developers_result = self.developer_controller.get_all_developers()
+        # Получение данных в зависимости от роли пользователя
+        if self.user.role == 'developer':
+            # Для разработчика показываем только его проекты и задачи
+            # Сначала получаем ID разработчика по ID пользователя
+            developer_result = self.developer_controller.get_developer_by_user_id(self.user.id)
+
+            if developer_result['success'] and developer_result['data']:
+                developer = developer_result['data']
+                print(f"Найден разработчик для пользователя {self.user.id}: {developer.full_name} (ID: {developer.id})")
+                # Теперь используем ID разработчика для получения проектов и задач
+                projects_result = self.project_controller.get_projects_by_developer(developer.id)
+                tasks_result = self.task_controller.get_tasks_by_developer(developer.id)
+            else:
+                # Если разработчик не найден, показываем пустые списки
+                print(f"Разработчик для пользователя {self.user.id} не найден")
+                projects_result = {'success': True, 'data': []}
+                tasks_result = {'success': True, 'data': []}
+        else:
+            # Для менеджеров и администраторов показываем все данные
+            projects_result = self.project_controller.get_all_projects()
+            tasks_result = self.task_controller.get_all_tasks()
+            developers_result = self.developer_controller.get_all_developers()
+            developers_count = len(developers_result['data']) if developers_result['success'] else 0
 
         projects = projects_result['data'] if projects_result['success'] else []
         tasks = tasks_result['data'] if tasks_result['success'] else []
-        developers = developers_result['data'] if developers_result['success'] else []
 
         # Статистика по проектам
         projects_widget = self.create_stat_card(
@@ -98,13 +131,21 @@ class DashboardTab(QWidget):
             "#4CAF50"
         )
 
-        # Статистика по разработчикам
-        developers_widget = self.create_stat_card(
-            "Разработчики",
-            len(developers),
-            "ui/resources/icons/developer.png",
-            "#FF9800"
-        )
+        # Статистика по разработчикам (для разработчика показываем только его)
+        if self.user.role == 'developer':
+            developers_widget = self.create_stat_card(
+                "Мой профиль",
+                1,
+                "ui/resources/icons/developer.png",
+                "#FF9800"
+            )
+        else:
+            developers_widget = self.create_stat_card(
+                "Разработчики",
+                developers_count,
+                "ui/resources/icons/developer.png",
+                "#FF9800"
+            )
 
         # Статистика по просроченным задачам
         overdue_tasks = [task for task in tasks if task.status != 'завершено' and hasattr(task,
@@ -123,6 +164,211 @@ class DashboardTab(QWidget):
         stats_layout.addWidget(overdue_widget, 1, 1)
 
         return stats_layout
+
+    def get_current_date(self):
+        """
+        Получение текущей даты в формате YYYY-MM-DD
+        """
+        from datetime import datetime
+        return datetime.now().strftime('%Y-%m-%d')
+
+    def create_recent_tasks_widget(self):
+        """
+        Создание виджета с последними задачами
+        """
+        # Создание рамки
+        frame = QFrame()
+        frame.setFrameShape(QFrame.StyledPanel)
+        frame.setFrameShadow(QFrame.Raised)
+        frame.setStyleSheet("""
+            QFrame {
+                background-color: white;
+                border-radius: 8px;
+            }
+        """)
+
+        layout = QVBoxLayout(frame)
+
+        # Заголовок
+        header_layout = QHBoxLayout()
+
+        title_label = QLabel("Последние задачи")
+        title_label.setFont(QFont('Arial', 14, QFont.Bold))
+        header_layout.addWidget(title_label)
+
+        view_all_button = QPushButton("Показать все")
+        view_all_button.setObjectName("flat")
+        view_all_button.clicked.connect(self.show_all_tasks)
+        header_layout.addWidget(view_all_button, alignment=Qt.AlignRight)
+
+        layout.addLayout(header_layout)
+
+        # Получение последних задач в зависимости от роли пользователя
+        if self.user.role == 'developer':
+            # Сначала получаем ID разработчика по ID пользователя
+            developer_result = self.developer_controller.get_developer_by_user_id(self.user.id)
+
+            if developer_result['success'] and developer_result['data']:
+                developer = developer_result['data']
+                # Теперь используем ID разработчика для получения проектов и задач
+                projects_result = self.project_controller.get_projects_by_developer(developer.id)
+                tasks_result = self.task_controller.get_tasks_by_developer(developer.id)
+            else:
+                # Если разработчик не найден, показываем пустые списки
+                print(f"Разработчик для пользователя {self.user.id} не найден")
+                projects_result = {'success': True, 'data': []}
+                tasks_result = {'success': True, 'data': []}
+        else:
+            # Для менеджеров и администраторов показываем все задачи
+            tasks_result = self.task_controller.get_all_tasks()
+
+        task_list = tasks_result['data'] if tasks_result['success'] else []
+
+        # Сортировка задач по дате обновления (в обратном порядке)
+        # Используем максимальное значение из created_at и updated_at для каждой задачи
+        from datetime import datetime
+
+        def get_latest_date(task):
+            created_at = getattr(task, 'created_at', '')
+            updated_at = getattr(task, 'updated_at', '')
+
+            # Если одна из дат отсутствует, возвращаем другую
+            if not created_at:
+                return updated_at
+            if not updated_at:
+                return created_at
+
+            # Преобразуем строки в объекты datetime для сравнения
+            try:
+                created_date = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+            except (ValueError, TypeError):
+                created_date = datetime.min
+
+            try:
+                updated_date = datetime.strptime(updated_at, '%Y-%m-%d %H:%M:%S')
+            except (ValueError, TypeError):
+                updated_date = datetime.min
+
+            # Возвращаем более позднюю дату
+            return max(created_date, updated_date).strftime('%Y-%m-%d %H:%M:%S')
+
+        # Сортируем задачи по последней дате изменения
+        # Переименовываем переменную tasks на task_list, чтобы избежать конфликта
+        task_list.sort(key=get_latest_date, reverse=True)
+
+        # Отображение только 5 последних задач
+        recent_tasks = task_list[:5]
+
+        if recent_tasks:
+            for task in recent_tasks:
+                task_widget = self.create_task_item(task)
+                layout.addWidget(task_widget)
+        else:
+            no_tasks_label = QLabel("Нет задач")
+            no_tasks_label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(no_tasks_label)
+
+        return frame
+
+        def get_latest_date(task):
+            created_at = getattr(task, 'created_at', '')
+            updated_at = getattr(task, 'updated_at', '')
+
+            # Если одна из дат отсутствует, возвращаем другую
+            if not created_at:
+                return updated_at
+            if not updated_at:
+                return created_at
+
+            # Преобразуем строки в объекты datetime для сравнения
+            try:
+                created_date = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+            except (ValueError, TypeError):
+                created_date = datetime.min
+
+            try:
+                updated_date = datetime.strptime(updated_at, '%Y-%m-%d %H:%M:%S')
+            except (ValueError, TypeError):
+                updated_date = datetime.min
+
+            # Возвращаем более позднюю дату
+            return max(created_date, updated_date).strftime('%Y-%m-%d %H:%M:%S')
+
+        # Сортируем задачи по последней дате изменения
+        tasks.sort(key=get_latest_date, reverse=True)
+
+        # Отображение только 5 последних задач
+        recent_tasks = tasks[:5]
+
+        if recent_tasks:
+            for task in recent_tasks:
+                task_widget = self.create_task_item(task)
+                layout.addWidget(task_widget)
+        else:
+            no_tasks_label = QLabel("Нет задач")
+            no_tasks_label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(no_tasks_label)
+
+        return frame
+
+    def refresh_data(self):
+        """
+        Обновление данных на дашборде
+        """
+        try:
+            # Запускаем проверки для создания новых уведомлений
+            self.notification_controller.run_all_checks()
+
+            # Создаем новый экземпляр всех контроллеров для обновления данных
+            self.project_controller = ProjectController()
+            self.task_controller = TaskController()
+            self.developer_controller = DeveloperController()
+            self.notification_controller = NotificationController()
+
+            # Сохраняем ссылку на текущий макет
+            main_layout = self.layout()
+
+            # Удаляем все виджеты из макета, кроме заголовка
+            if main_layout:
+                # Сохраняем заголовок (первый элемент)
+                header_layout = None
+                if main_layout.count() > 0:
+                    header_item = main_layout.itemAt(0)
+                    if header_item.layout():
+                        header_layout = header_item.layout()
+
+                # Удаляем все остальные виджеты
+                while main_layout.count() > 1:
+                    item = main_layout.takeAt(1)
+                    if item.widget():
+                        item.widget().deleteLater()
+
+                # Создание области прокрутки
+                scroll_area = QScrollArea()
+                scroll_area.setWidgetResizable(True)
+                scroll_area.setFrameShape(QFrame.NoFrame)
+
+                # Создание виджета для размещения содержимого
+                scroll_content = QWidget()
+                scroll_layout = QVBoxLayout(scroll_content)
+                scroll_layout.setContentsMargins(0, 0, 0, 0)
+                scroll_layout.setSpacing(20)
+
+                # Добавление виджетов с информацией
+                scroll_layout.addLayout(self.create_stats_widgets())
+                scroll_layout.addWidget(self.create_recent_tasks_widget())
+                scroll_layout.addWidget(self.create_notifications_widget())
+
+                # Добавление растягивающегося пространства в конец
+                scroll_layout.addStretch()
+
+                # Установка виджета содержимого для области прокрутки
+                scroll_area.setWidget(scroll_content)
+                main_layout.addWidget(scroll_area)
+        except Exception as e:
+            import traceback
+            print(f"Ошибка при обновлении дашборда: {str(e)}")
+            print(traceback.format_exc())
 
     def create_stat_card(self, title, value, icon_path, color):
         """
@@ -166,85 +412,6 @@ class DashboardTab(QWidget):
 
         return card
 
-    def create_recent_tasks_widget(self):
-        """
-        Создание виджета с последними задачами
-        """
-        # Создание рамки
-        frame = QFrame()
-        frame.setFrameShape(QFrame.StyledPanel)
-        frame.setFrameShadow(QFrame.Raised)
-        frame.setStyleSheet("""
-            QFrame {
-                background-color: white;
-                border-radius: 8px;
-            }
-        """)
-
-        layout = QVBoxLayout(frame)
-
-        # Заголовок
-        header_layout = QHBoxLayout()
-
-        title_label = QLabel("Последние задачи")
-        title_label.setFont(QFont('Arial', 14, QFont.Bold))
-        header_layout.addWidget(title_label)
-
-        view_all_button = QPushButton("Показать все")
-        view_all_button.setObjectName("flat")
-        view_all_button.clicked.connect(self.show_all_tasks)
-        header_layout.addWidget(view_all_button, alignment=Qt.AlignRight)
-
-        layout.addLayout(header_layout)
-
-        # Получение последних задач
-        tasks_result = self.task_controller.get_all_tasks()
-        tasks = tasks_result['data'] if tasks_result['success'] else []
-
-        # Сортировка задач по дате обновления (в обратном порядке)
-        # Используем максимальное значение из created_at и updated_at для каждой задачи
-        from datetime import datetime
-
-        def get_latest_date(task):
-            created_at = getattr(task, 'created_at', '')
-            updated_at = getattr(task, 'updated_at', '')
-
-            # Если одна из дат отсутствует, возвращаем другую
-            if not created_at:
-                return updated_at
-            if not updated_at:
-                return created_at
-
-            # Преобразуем строки в объекты datetime для сравнения
-            try:
-                created_date = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
-            except (ValueError, TypeError):
-                created_date = datetime.min
-
-            try:
-                updated_date = datetime.strptime(updated_at, '%Y-%m-%d %H:%M:%S')
-            except (ValueError, TypeError):
-                updated_date = datetime.min
-
-            # Возвращаем более позднюю дату
-            return max(created_date, updated_date).strftime('%Y-%m-%d %H:%M:%S')
-
-        # Сортируем задачи по последней дате изменения
-        tasks.sort(key=get_latest_date, reverse=True)
-
-        # Отображение только 5 последних задач
-        recent_tasks = tasks[:5]
-
-        if recent_tasks:
-            for task in recent_tasks:
-                task_widget = self.create_task_item(task)
-                layout.addWidget(task_widget)
-        else:
-            no_tasks_label = QLabel("Нет задач")
-            no_tasks_label.setAlignment(Qt.AlignCenter)
-            layout.addWidget(no_tasks_label)
-
-        return frame
 
     def create_task_item(self, task):
         """
@@ -430,27 +597,6 @@ class DashboardTab(QWidget):
 
         return item
 
-    def show_all_tasks(self):
-        """
-        Показать все задачи (переключение на вкладку задач)
-        """
-        # Находим индекс вкладки с задачами и переключаемся на нее
-        parent = self.parent()
-        if parent:
-            tab_widget = parent.parent()
-            for i in range(tab_widget.count()):
-                if tab_widget.tabText(i) == 'Задачи':
-                    tab_widget.setCurrentIndex(i)
-                    break
-
-    def mark_notification_as_read(self, notification_id):
-        """
-        Отметить уведомление как прочитанное
-        """
-        result = self.notification_controller.mark_as_read(notification_id)
-        if result['success']:
-            self.refresh_data()
-
     def mark_all_notifications_as_read(self):
         """
         Отметить все уведомления как прочитанные
@@ -458,69 +604,3 @@ class DashboardTab(QWidget):
         result = self.notification_controller.mark_all_as_read()
         if result['success']:
             self.refresh_data()
-
-    def get_current_date(self):
-        """
-        Получение текущей даты в формате YYYY-MM-DD
-        """
-        from datetime import datetime
-        return datetime.now().strftime('%Y-%m-%d')
-
-    def refresh_data(self):
-        """
-        Обновление данных на дашборде
-        """
-        try:
-            # Запускаем проверки для создания новых уведомлений
-            self.notification_controller.run_all_checks()
-
-            # Создаем новый экземпляр всех контроллеров для обновления данных
-            self.project_controller = ProjectController()
-            self.task_controller = TaskController()
-            self.developer_controller = DeveloperController()
-            self.notification_controller = NotificationController()
-
-            # Сохраняем ссылку на текущий макет
-            main_layout = self.layout()
-
-            # Удаляем все виджеты из макета, кроме заголовка
-            if main_layout:
-                # Сохраняем заголовок (первый элемент)
-                header_layout = None
-                if main_layout.count() > 0:
-                    header_item = main_layout.itemAt(0)
-                    if header_item.layout():
-                        header_layout = header_item.layout()
-
-                # Удаляем все остальные виджеты
-                while main_layout.count() > 1:
-                    item = main_layout.takeAt(1)
-                    if item.widget():
-                        item.widget().deleteLater()
-
-                # Создание области прокрутки
-                scroll_area = QScrollArea()
-                scroll_area.setWidgetResizable(True)
-                scroll_area.setFrameShape(QFrame.NoFrame)
-
-                # Создание виджета для размещения содержимого
-                scroll_content = QWidget()
-                scroll_layout = QVBoxLayout(scroll_content)
-                scroll_layout.setContentsMargins(0, 0, 0, 0)
-                scroll_layout.setSpacing(20)
-
-                # Добавление виджетов с информацией
-                scroll_layout.addLayout(self.create_stats_widgets())
-                scroll_layout.addWidget(self.create_recent_tasks_widget())
-                scroll_layout.addWidget(self.create_notifications_widget())
-
-                # Добавление растягивающегося пространства в конец
-                scroll_layout.addStretch()
-
-                # Установка виджета содержимого для области прокрутки
-                scroll_area.setWidget(scroll_content)
-                main_layout.addWidget(scroll_area)
-        except Exception as e:
-            import traceback
-            print(f"Ошибка при обновлении дашборда: {str(e)}")
-            print(traceback.format_exc())

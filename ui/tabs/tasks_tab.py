@@ -19,7 +19,19 @@ class TasksTab(QWidget):
         self.developer_controller = DeveloperController()
         self.export_controller = ExportController()
         self.init_ui()
-    
+
+        if self.user.role == 'developer':
+            # Скрываем фильтр по разработчикам
+            if hasattr(self, 'developer_filter_combobox'):
+                self.developer_filter_combobox.setVisible(False)
+            if hasattr(self, 'developer_filter_label'):
+                self.developer_filter_label.setVisible(False)
+            # Закомментируйте или удалите следующую строку:
+            # self.load_developer_projects()
+
+            # Закомментируйте или удалите следующую строку:
+            # self.load_developer_projects()
+
     def init_ui(self):
         """
         Инициализация интерфейса
@@ -51,7 +63,7 @@ class TasksTab(QWidget):
         self.project_combo.setMinimumWidth(200)
         self.project_combo.addItem("Все", "")
         self.project_combo.currentIndexChanged.connect(self.apply_filters)
-        
+        self.developer_label = QLabel("Разработчик:")
         developer_label = QLabel("Разработчик:")
         self.developer_combo = QComboBox()
         self.developer_combo.setMinimumWidth(200)
@@ -137,6 +149,18 @@ class TasksTab(QWidget):
         """
         Загрузка списка проектов и разработчиков для фильтров
         """
+        if self.user and self.user.role == 'developer':
+            result = self.project_controller.get_projects_by_developer(self.user.id)
+            if result['success'] and result['data']:
+                # Очищаем текущий список проектов в комбобоксе
+                if hasattr(self, 'project_filter_combobox'):
+                    self.project_filter_combobox.clear()
+                    self.project_filter_combobox.addItem("Все проекты", None)
+
+                    # Добавляем только проекты разработчика
+                    for project in result['data']:
+                        self.project_filter_combobox.addItem(project.name, project.id)
+
         # Загрузка проектов
         projects_result = self.project_controller.get_all_projects()
         if projects_result['success']:
@@ -192,7 +216,18 @@ class TasksTab(QWidget):
         try:
             # Если пользователь - разработчик, показываем только его задачи
             if self.user.role == 'developer':
-                result = self.task_controller.get_tasks_by_developer(self.user.id)
+                # Сначала получаем ID разработчика по ID пользователя
+                developer_result = self.developer_controller.get_developer_by_user_id(self.user.id)
+
+                if developer_result['success'] and developer_result['data']:
+                    developer = developer_result['data']
+                    print(f"Найден разработчик с ID {developer.id} для пользователя {self.user.id}")
+                    # Теперь используем ID разработчика для получения задач
+                    result = self.task_controller.get_tasks_by_developer(developer.id)
+                else:
+                    # Если разработчик не найден, показываем пустой список
+                    print(f"Разработчик для пользователя {self.user.id} не найден")
+                    result = {'success': True, 'data': []}
             else:
                 # Для менеджеров и администраторов показываем все задачи
                 result = self.task_controller.get_all_tasks()
@@ -247,6 +282,7 @@ class TasksTab(QWidget):
                             item.setBackground(QColor(status_color))
         except Exception as e:
             print(f"Ошибка при обновлении таблицы: {e}")
+
 
     def apply_filters(self):
         """
@@ -381,15 +417,20 @@ class TasksTab(QWidget):
                 self.refresh_data()
             else:
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
-    
+
     def refresh_data(self):
         """
         Обновление данных в таблице
         """
+        # Загружаем проекты и разработчиков (для разработчика загрузятся только его проекты)
         self.load_projects_and_developers()
+
+        # Загружаем задачи (для разработчика загрузятся только его задачи)
         self.load_tasks()
+
+        # Применяем фильтры
         self.apply_filters()
-    
+
     def export_to_csv(self):
         """
         Экспорт данных в CSV

@@ -49,20 +49,30 @@ class MainWindow(QMainWindow):
         self.tab_widget.setMovable(True)
         self.tab_widget.setDocumentMode(True)
 
-        # Добавление вкладок
+        # Добавление вкладок в зависимости от роли пользователя
         self.dashboard_tab = DashboardTab(self.user)
-        self.developers_tab = DevelopersTab(self.user)
-        self.projects_tab = ProjectsTab(self.user)
-        self.tasks_tab = TasksTab(self.user)
-        self.reports_tab = ReportsTab(self.user)
-        self.settings_tab = SettingsTab(self.user)
-
         self.tab_widget.addTab(self.dashboard_tab, QIcon('ui/resources/icons/app_icon.png'), 'Дашборд')
-        self.tab_widget.addTab(self.developers_tab, QIcon('ui/resources/icons/app_icon.png'), 'Разработчики')
-        self.tab_widget.addTab(self.projects_tab, QIcon('ui/resources/icons/app_icon.png'), 'Проекты')
-        self.tab_widget.addTab(self.tasks_tab, QIcon('ui/resources/icons/app_icon.png'), 'Задачи')
-        self.tab_widget.addTab(self.reports_tab, QIcon('ui/resources/icons/app_icon.png'), 'Отчеты')
-        self.tab_widget.addTab(self.settings_tab, QIcon('ui/resources/icons/app_icon.png'), 'Настройки')
+
+        # Если пользователь - разработчик, показываем только проекты и задачи этого разработчика
+        if self.user.role == 'developer':
+            self.projects_tab = ProjectsTab(self.user)
+            self.tasks_tab = TasksTab(self.user)
+
+            self.tab_widget.addTab(self.projects_tab, QIcon('ui/resources/icons/app_icon.png'), 'Проекты')
+            self.tab_widget.addTab(self.tasks_tab, QIcon('ui/resources/icons/app_icon.png'), 'Задачи')
+        else:
+            # Для менеджеров и администраторов показываем все вкладки
+            self.developers_tab = DevelopersTab(self.user)
+            self.projects_tab = ProjectsTab(self.user)
+            self.tasks_tab = TasksTab(self.user)
+            self.reports_tab = ReportsTab(self.user)
+            self.settings_tab = SettingsTab(self.user)
+
+            self.tab_widget.addTab(self.developers_tab, QIcon('ui/resources/icons/app_icon.png'), 'Разработчики')
+            self.tab_widget.addTab(self.projects_tab, QIcon('ui/resources/icons/app_icon.png'), 'Проекты')
+            self.tab_widget.addTab(self.tasks_tab, QIcon('ui/resources/icons/app_icon.png'), 'Задачи')
+            self.tab_widget.addTab(self.reports_tab, QIcon('ui/resources/icons/app_icon.png'), 'Отчеты')
+            self.tab_widget.addTab(self.settings_tab, QIcon('ui/resources/icons/app_icon.png'), 'Настройки')
 
         # Добавление вкладки администрирования только для администраторов
         if self.user.role == 'admin':
@@ -322,10 +332,12 @@ class MainWindow(QMainWindow):
         """
         reply = QMessageBox.question(
             self, 'Выход', 'Вы уверены, что хотите выйти?',
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
             event.accept()
         else:
             event.ignore()
+
+
