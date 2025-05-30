@@ -1,51 +1,8 @@
 PRAGMA foreign_keys = ON;
 
 -- =============================================
--- Создание основных таблиц
--- =============================================
-DROP TABLE IF EXISTS developers;
-CREATE TABLE IF NOT EXISTS developers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    full_name TEXT NOT NULL,
-    position TEXT NOT NULL CHECK (position IN ('backend', 'frontend', 'QA')),
-    hourly_rate REAL NOT NULL CHECK (hourly_rate > 0),
-    user_id INTEGER,
-    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
-);
-
-DROP TABLE IF EXISTS projects;
-CREATE TABLE IF NOT EXISTS projects (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    client TEXT NOT NULL,
-    deadline DATE NOT NULL,
-    budget REAL NOT NULL CHECK (budget >= 0),
-    status TEXT DEFAULT 'в работе',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by INTEGER,
-    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
-);
-
-DROP TABLE IF EXISTS tasks;
-CREATE TABLE IF NOT EXISTS tasks (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-    project_id INTEGER NOT NULL,
-    developer_id INTEGER,
-    description TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'новая',
-    hours_worked REAL NOT NULL DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_by INTEGER,
-    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-    FOREIGN KEY (developer_id) REFERENCES developers(id) ON DELETE SET NULL,
-    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
-);
-
--- =============================================
 -- Создание таблицы пользователей
 -- =============================================
-DROP TABLE IF EXISTS users;
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
@@ -61,7 +18,6 @@ CREATE TABLE IF NOT EXISTS users (
 -- =============================================
 -- Создание таблицы сессий
 -- =============================================
-DROP TABLE IF EXISTS sessions;
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -71,6 +27,44 @@ CREATE TABLE IF NOT EXISTS sessions (
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
+-- =============================================
+-- Создание основных таблиц
+-- =============================================
+CREATE TABLE IF NOT EXISTS developers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    full_name TEXT NOT NULL,
+    position TEXT NOT NULL CHECK (position IN ('backend', 'frontend', 'QA')),
+    hourly_rate REAL NOT NULL CHECK (hourly_rate > 0),
+    user_id INTEGER,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS projects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    client TEXT NOT NULL,
+    deadline DATE NOT NULL,
+    budget REAL NOT NULL CHECK (budget >= 0),
+    status TEXT DEFAULT 'в работе',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER NOT NULL,
+    developer_id INTEGER NOT NULL,
+    description TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('новая', 'в работе', 'на проверке', 'завершено')),
+    hours_worked REAL NOT NULL DEFAULT 0 CHECK (hours_worked >= 0),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
+    FOREIGN KEY (developer_id) REFERENCES developers (id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users (id) ON DELETE SET NULL
+);
 -- =============================================
 -- Создание таблицы уведомлений
 -- =============================================
@@ -90,6 +84,12 @@ CREATE TABLE IF NOT EXISTS notifications (
 -- =============================================
 -- Создание индексов для ускорения запросов
 -- =============================================
+CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
+CREATE INDEX IF NOT EXISTS idx_users_role ON users (role);
+
+CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions (session_token);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions (user_id);
+
 CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks (project_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_developer_id ON tasks (developer_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks (status);
@@ -102,18 +102,9 @@ CREATE INDEX IF NOT EXISTS idx_projects_created_by ON projects (created_by);
 CREATE INDEX IF NOT EXISTS idx_developers_position ON developers (position);
 CREATE INDEX IF NOT EXISTS idx_developers_user_id ON developers (user_id);
 
-CREATE INDEX IF NOT EXISTS idx_users_username ON users (username);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);
-CREATE INDEX IF NOT EXISTS idx_users_role ON users (role);
-
-CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions (session_token);
-CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions (user_id);
-
 CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications (is_read);
 CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications (created_at);
 CREATE INDEX IF NOT EXISTS idx_notifications_related ON notifications (related_id, related_type);
-CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications (user_id);
-
 -- =============================================
 -- Создание представлений (Views) для удобства работы
 -- =============================================
@@ -279,13 +270,11 @@ END;
 -- =============================================
 -- Добавление администратора по умолчанию (пароль: admin)
 INSERT OR IGNORE INTO users (username, password, email, full_name, role, is_active)
-VALUES
-('admin', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'admin@example.com', 'Администратор', 'admin', 1),
-('1', '$1a616f9728e5150875b99126c4557f91$8cbffdff5e89238d471e04779aee58b587340a9601303259cb4e77e3dd117d44', '1@.com', '1', 'admin', 1);
+VALUES ('admin', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'admin@example.com', 'Администратор', 'admin', 1);
 
 -- Добавление тестовых пользователей
 INSERT OR IGNORE INTO users (username, password, email, full_name, role, is_active)
-VALUES 
+VALUES
 ('manager', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$5f4dcc3b5aa765d61d8327deb882cf99', 'manager@example.com', 'Менеджер Проектов', 'manager', 1),
 ('developer1', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$5f4dcc3b5aa765d61d8327deb882cf99', 'dev1@example.com', 'Иванов Иван Иванович', 'developer', 1),
 ('developer2', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$5f4dcc3b5aa765d61d8327deb882cf99', 'dev2@example.com', 'Петров Петр Петрович', 'developer', 1);
@@ -300,21 +289,14 @@ VALUES
 ('Новикова Елена Владимировна', 'frontend', 1400, NULL);
 
 -- Добавление проектов
-INSERT OR IGNORE INTO projects (name, client, deadline, budget, status, created_by)
+INSERT OR IGNORE INTO projects (name, client, deadline, budget, created_by)
 VALUES
-('Интернет-магазин', 'ООО "Торговый Дом"', '2023-12-31', 500000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('Корпоративный портал', 'АО "Корпорация"', '2023-11-30', 350000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('Мобильное приложение', 'ИП Смирнов', '2024-02-15', 600000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('CRM-система', 'ООО "Бизнес Решения"', '2023-10-15', 450000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('Система учета рабочего времени', 'ЗАО "ТехноПром"', '2024-01-20', 280000, 'в работе', (SELECT id FROM users WHERE username = 'manager2')),
-('Платформа онлайн-обучения', 'Образовательный центр "Знание"', '2024-03-10', 520000, 'в работе', (SELECT id FROM users WHERE username = 'manager2')),
-('Система электронного документооборота', 'Государственное учреждение', '2023-12-15', 700000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('Мобильное приложение для фитнеса', 'Сеть фитнес-клубов "Атлет"', '2024-04-01', 420000, 'в работе', (SELECT id FROM users WHERE username = 'manager2')),
-('Система автоматизации склада', 'ООО "Логистик Групп"', '2023-11-15', 550000, 'завершено', (SELECT id FROM users WHERE username = 'manager')),
-('Личный кабинет клиента', 'Банк "Финансовый"', '2024-01-10', 380000, 'в работе', (SELECT id FROM users WHERE username = 'manager2')),
-('Система аналитики продаж', 'Торговая сеть "МегаМаркет"', '2024-02-28', 490000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('Веб-сайт строительной компании', 'ООО "СтройМастер"', '2023-10-30', 250000, 'завершено', (SELECT id FROM users WHERE username = 'manager2'));
---  Добавление задач
+('Интернет-магазин', 'ООО "Торговый Дом"', '2023-12-31', 500000, (SELECT id FROM users WHERE username = 'manager')),
+('Корпоративный портал', 'АО "Корпорация"', '2023-11-30', 350000, (SELECT id FROM users WHERE username = 'manager')),
+('Мобильное приложение', 'ИП Смирнов', '2024-02-15', 600000, (SELECT id FROM users WHERE username = 'manager')),
+('CRM-система', 'ООО "Бизнес Решения"', '2023-10-15', 450000, (SELECT id FROM users WHERE username = 'manager'));
+
+-- Добавление задач
 INSERT OR IGNORE INTO tasks (project_id, developer_id, description, status, hours_worked, created_by)
 VALUES
 (1, 1, 'Разработка API для товаров', 'в работе', 10, (SELECT id FROM users WHERE username = 'manager')),
