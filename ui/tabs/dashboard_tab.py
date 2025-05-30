@@ -58,7 +58,9 @@ class DashboardTab(QWidget):
         # Добавление виджетов с информацией
         scroll_layout.addLayout(self.create_stats_widgets())
         scroll_layout.addWidget(self.create_recent_tasks_widget())
-        scroll_layout.addWidget(self.create_notifications_widget())
+        # Добавляем уведомления только для не-разработчиков
+        if self.user.role != 'developer':
+            scroll_layout.addWidget(self.create_notifications_widget())
 
         # Добавление растягивающегося пространства в конец
         scroll_layout.addStretch()
@@ -119,16 +121,18 @@ class DashboardTab(QWidget):
         projects_widget = self.create_stat_card(
             "Проекты",
             len(projects),
-            "ui/resources/icons/project.png",
-            "#1976D2"
+            "ui/resources/icons/logo.png",  # Используем специфичную иконку для проектов
+            "#1976D2",
+            "Всего активных проектов"  # Добавляем подпись
         )
 
         # Статистика по задачам
         tasks_widget = self.create_stat_card(
             "Задачи",
             len(tasks),
-            "ui/resources/icons/task.png",
-            "#4CAF50"
+            "ui/resources/icons/logo.png",  # Используем специфичную иконку для задач
+            "#FF5800",
+            "Всего задач в системе"  # Добавляем подпись
         )
 
         # Статистика по разработчикам (для разработчика показываем только его)
@@ -136,32 +140,36 @@ class DashboardTab(QWidget):
             developers_widget = self.create_stat_card(
                 "Мой профиль",
                 1,
-                "ui/resources/icons/developer.png",
-                "#FF9800"
+                "ui/resources/icons/logo.png",  # Используем специфичную иконку для разработчиков
+                "#9800FF",
+                "Ваш профиль разработчика"  # Добавляем подпись
+            )
+            # Статистика по просроченным задачам
+            overdue_tasks = [task for task in tasks if task.status != 'завершено' and hasattr(task,
+                                                                                              'project_deadline') and task.project_deadline < self.get_current_date()]
+            overdue_widget = self.create_stat_card(
+                "Просроченные задачи",
+                len(overdue_tasks),
+                "ui/resources/icons/logo.png",  # Используем иконку предупреждения для просроченных задач
+                "#ffd800",
+                "Требуют внимания"  # Добавляем подпись
             )
         else:
             developers_widget = self.create_stat_card(
                 "Разработчики",
                 developers_count,
-                "ui/resources/icons/developer.png",
-                "#FF9800"
+                "ui/resources/icons/logo.png",  # Используем специфичную иконку для разработчиков
+                "#9800FF",
+                "Всего разработчиков в системе"  # Добавляем подпись
             )
 
-        # Статистика по просроченным задачам
-        overdue_tasks = [task for task in tasks if task.status != 'завершено' and hasattr(task,
-                                                                                          'project_deadline') and task.project_deadline < self.get_current_date()]
-        overdue_widget = self.create_stat_card(
-            "Просроченные задачи",
-            len(overdue_tasks),
-            "ui/resources/icons/warning.png",
-            "#F44336"
-        )
 
         # Добавление виджетов в сетку
         stats_layout.addWidget(projects_widget, 0, 0)
         stats_layout.addWidget(tasks_widget, 0, 1)
         stats_layout.addWidget(developers_widget, 1, 0)
-        stats_layout.addWidget(overdue_widget, 1, 1)
+        if self.user.role == 'developer':
+            stats_layout.addWidget(overdue_widget, 1, 1)
 
         return stats_layout
 
@@ -357,7 +365,10 @@ class DashboardTab(QWidget):
                 # Добавление виджетов с информацией
                 scroll_layout.addLayout(self.create_stats_widgets())
                 scroll_layout.addWidget(self.create_recent_tasks_widget())
-                scroll_layout.addWidget(self.create_notifications_widget())
+
+                # Добавляем уведомления только для не-разработчиков
+                if self.user.role != 'developer':
+                    scroll_layout.addWidget(self.create_notifications_widget())
 
                 # Добавление растягивающегося пространства в конец
                 scroll_layout.addStretch()
@@ -370,48 +381,77 @@ class DashboardTab(QWidget):
             print(f"Ошибка при обновлении дашборда: {str(e)}")
             print(traceback.format_exc())
 
-    def create_stat_card(self, title, value, icon_path, color):
+    def create_stat_card(self, title, value, icon_path, color, subtitle=None):
         """
         Создание карточки со статистикой
+
+        Args:
+            title: Заголовок карточки
+            value: Значение статистики
+            icon_path: Путь к иконке
+            color: Цвет карточки
+            subtitle: Подзаголовок (опционально)
         """
         card = QFrame()
         card.setFrameShape(QFrame.StyledPanel)
         card.setFrameShadow(QFrame.Raised)
         card.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        card.setMinimumHeight(120)
+        card.setMinimumHeight(180)  # Увеличиваем высоту карточки
+
+        # Улучшенный стиль с градиентом и тенью
         card.setStyleSheet(f"""
             QFrame {{
-                background-color: white;
-                border-radius: 8px;
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                            stop:0 white, stop:1 {color}22);
+                border-radius: 12px;
                 border-left: 5px solid {color};
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                padding: 10px;
             }}
         """)
 
-        layout = QHBoxLayout(card)
+        layout = QVBoxLayout(card)
+        layout.setContentsMargins(15, 15, 15, 15)
+        layout.setSpacing(10)
+
+        # Заголовок
+        title_layout = QHBoxLayout()
+
+        title_label = QLabel(title)
+        title_label.setFont(QFont('Arial', 18, QFont.Bold))
+        title_label.setStyleSheet(f"color: {color};")
 
         # Иконка
         icon_label = QLabel()
-        icon_label.setPixmap(QIcon(icon_path).pixmap(QSize(48, 48)))
-        layout.addWidget(icon_label)
+        icon = QIcon(icon_path)
+        if not icon.isNull():
+            icon_label.setPixmap(icon.pixmap(QSize(32, 32)))
+        else:
+            # Если иконка не найдена, используем запасную
+            icon_label.setPixmap(QIcon("ui/resources/icons/logo.png").pixmap(QSize(32, 32)))
 
-        # Информация
-        info_layout = QVBoxLayout()
+        title_layout.addWidget(icon_label)
+        title_layout.addWidget(title_label)
+        title_layout.addStretch()
 
-        title_label = QLabel(title)
-        title_label.setFont(QFont('Arial', 12))
+        layout.addLayout(title_layout)
 
+        # Значение
         value_label = QLabel(str(value))
-        value_label.setFont(QFont('Arial', 24, QFont.Bold))
+        value_label.setFont(QFont('Arial', 32, QFont.Bold))
         value_label.setStyleSheet(f"color: {color};")
+        value_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(value_label)
 
-        info_layout.addWidget(title_label)
-        info_layout.addWidget(value_label)
-
-        layout.addLayout(info_layout)
-        layout.addStretch()
+        # Подзаголовок (если есть)
+        if subtitle:
+            subtitle_label = QLabel(subtitle)
+            subtitle_label.setFont(QFont('Arial', 10))
+            subtitle_label.setStyleSheet("color: #000;")
+            subtitle_label.setAlignment(Qt.AlignCenter)
+            layout.addWidget(subtitle_label)
 
         return card
-
 
     def create_task_item(self, task):
         """
@@ -520,7 +560,6 @@ class DashboardTab(QWidget):
         header_layout.addWidget(mark_all_button, alignment=Qt.AlignRight)
 
         layout.addLayout(header_layout)
-
         try:
             # Получение уведомлений
             notifications_result = self.notification_controller.get_all_notifications(limit=5, only_unread=True)

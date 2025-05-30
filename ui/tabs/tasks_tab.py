@@ -22,15 +22,11 @@ class TasksTab(QWidget):
 
         if self.user.role == 'developer':
             # Скрываем фильтр по разработчикам
-            if hasattr(self, 'developer_filter_combobox'):
-                self.developer_filter_combobox.setVisible(False)
-            if hasattr(self, 'developer_filter_label'):
-                self.developer_filter_label.setVisible(False)
-            # Закомментируйте или удалите следующую строку:
-            # self.load_developer_projects()
+            if hasattr(self, 'developer_label'):
+                self.developer_label.setVisible(False)
+            if hasattr(self, 'developer_combo'):
+                self.developer_combo.setVisible(False)
 
-            # Закомментируйте или удалите следующую строку:
-            # self.load_developer_projects()
 
     def init_ui(self):
         """
@@ -64,7 +60,6 @@ class TasksTab(QWidget):
         self.project_combo.addItem("Все", "")
         self.project_combo.currentIndexChanged.connect(self.apply_filters)
         self.developer_label = QLabel("Разработчик:")
-        developer_label = QLabel("Разработчик:")
         self.developer_combo = QComboBox()
         self.developer_combo.setMinimumWidth(200)
         self.developer_combo.addItem("Все", "")
@@ -86,7 +81,7 @@ class TasksTab(QWidget):
         filter_layout.addWidget(self.search_input)
         filter_layout.addWidget(project_label)
         filter_layout.addWidget(self.project_combo)
-        filter_layout.addWidget(developer_label)
+        filter_layout.addWidget(self.developer_label)
         filter_layout.addWidget(self.developer_combo)
         filter_layout.addWidget(status_label)
         filter_layout.addWidget(self.status_combo)
@@ -144,67 +139,74 @@ class TasksTab(QWidget):
         # Загрузка данных
         self.load_projects_and_developers()
         self.load_tasks()
-    
+
     def load_projects_and_developers(self):
         """
         Загрузка списка проектов и разработчиков для фильтров
         """
+        # Если пользователь - разработчик, загружаем только его проекты
         if self.user and self.user.role == 'developer':
-            result = self.project_controller.get_projects_by_developer(self.user.id)
-            if result['success'] and result['data']:
-                # Очищаем текущий список проектов в комбобоксе
-                if hasattr(self, 'project_filter_combobox'):
-                    self.project_filter_combobox.clear()
-                    self.project_filter_combobox.addItem("Все проекты", None)
+            # Сначала получаем ID разработчика по ID пользователя
+            developer_result = self.developer_controller.get_developer_by_user_id(self.user.id)
+
+            if developer_result['success'] and developer_result['data']:
+                developer = developer_result['data']
+                # Получаем проекты разработчика
+                result = self.project_controller.get_projects_by_developer(developer.id)
+
+                if result['success']:
+                    # Очищаем текущий список проектов в комбобоксе
+                    self.project_combo.clear()
+                    self.project_combo.addItem("Все", "")
 
                     # Добавляем только проекты разработчика
                     for project in result['data']:
-                        self.project_filter_combobox.addItem(project.name, project.id)
+                        self.project_combo.addItem(project.name, project.id)
+        else:
+            # Загрузка всех проектов для менеджеров и администраторов
+            projects_result = self.project_controller.get_all_projects()
+            if projects_result['success']:
+                projects = projects_result['data']
 
-        # Загрузка проектов
-        projects_result = self.project_controller.get_all_projects()
-        if projects_result['success']:
-            projects = projects_result['data']
+                # Сохранение текущего выбора
+                current_project = self.project_combo.currentData()
 
+                # Очистка комбобокса
+                self.project_combo.clear()
+                self.project_combo.addItem("Все", "")
 
-            # Сохранение текущего выбора
-            current_project = self.project_combo.currentData()
-            
-            # Очистка комбобокса
-            self.project_combo.clear()
-            self.project_combo.addItem("Все", "")
-            
-            # Добавление проектов
-            for project in projects:
-                self.project_combo.addItem(project.name, project.id)
-            
-            # Восстановление выбора
-            if current_project:
-                index = self.project_combo.findData(current_project)
-                if index >= 0:
-                    self.project_combo.setCurrentIndex(index)
-        
-        # Загрузка разработчиков
-        developers_result = self.developer_controller.get_all_developers()
-        if developers_result['success']:
-            developers = developers_result['data']
-            
-            # Сохранение текущего выбора
-            current_developer = self.developer_combo.currentData()
-            
-            # Очистка комбобокса
-            self.developer_combo.clear()
-            self.developer_combo.addItem("Все", "")
-            
-            # Добавление разработчиков
-            for developer in developers:
-                self.developer_combo.addItem(developer.full_name, developer.id)
-            
-            # Восстановление выбора
-            if current_developer:
-                index = self.developer_combo.findData(current_developer)
-                if index >= 0:
-                    self.developer_combo.setCurrentIndex(index)
+                # Добавление проектов
+                for project in projects:
+                    self.project_combo.addItem(project.name, project.id)
+
+                # Восстановление выбора
+                if current_project:
+                    index = self.project_combo.findData(current_project)
+                    if index >= 0:
+                        self.project_combo.setCurrentIndex(index)
+
+        # Загрузка разработчиков (только для менеджеров и администраторов)
+        if self.user.role != 'developer':
+            developers_result = self.developer_controller.get_all_developers()
+            if developers_result['success']:
+                developers = developers_result['data']
+
+                # Сохранение текущего выбора
+                current_developer = self.developer_combo.currentData()
+
+                # Очистка комбобокса
+                self.developer_combo.clear()
+                self.developer_combo.addItem("Все", "")
+
+                # Добавление разработчиков
+                for developer in developers:
+                    self.developer_combo.addItem(developer.full_name, developer.id)
+
+                # Восстановление выбора
+                if current_developer:
+                    index = self.developer_combo.findData(current_developer)
+                    if index >= 0:
+                        self.developer_combo.setCurrentIndex(index)
 
     def load_tasks(self):
         """
