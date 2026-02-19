@@ -1,9 +1,11 @@
 from src.main.service.notification import NotificationService
 
 
-class NotificationController:
+from .base import BaseController
+
+class NotificationController(BaseController):
     def __init__(self, service=None):
-        super().__init__(service or NotificationService())
+        self.service = service or NotificationService()
 
     def get_all_notifications(self, limit=None, offset=None, only_unread=False):
         return self.execute_service_method('get_all_notifications', limit, offset, only_unread)

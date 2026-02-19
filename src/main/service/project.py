@@ -5,6 +5,12 @@ from datetime import datetime
 
 
 class ProjectService:
+    def execute_query(self, query, params=None):
+        db_manager = Project().db_manager
+        db_manager.connect()
+        if params:
+            return db_manager.execute(query, params)
+        return db_manager.execute(query)
 
     def get_all_projects(self):
 

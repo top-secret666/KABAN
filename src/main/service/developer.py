@@ -4,6 +4,12 @@ from .exceptions import BusinessException, ValidationException, DatabaseExceptio
 
 
 class DeveloperService:
+    def execute_query(self, query, params=None):
+        db_manager = Developer().db_manager
+        db_manager.connect()
+        if params:
+            return db_manager.execute(query, params)
+        return db_manager.execute(query)
 
     def get_all_developers(self):
         try:

@@ -3,12 +3,13 @@ from datetime import datetime
 
 
 class Project:
-    def __init__(self, id=None, name="", client="", deadline="", budget=0):
+    def __init__(self, id=None, name="", client="", deadline="", budget=0, created_at=None):
         self.id = id
         self.name = name
         self.client = client
         self.deadline = deadline
         self.budget = budget
+        self.created_at = created_at
         self.db_manager = DBManager()
 
     def to_dict(self):
@@ -17,7 +18,8 @@ class Project:
             'name': self.name,
             'client': self.client,
             'deadline': self.deadline,
-            'budget': self.budget
+            'budget': self.budget,
+            'created_at': self.created_at
         }
 
     @classmethod
@@ -27,7 +29,8 @@ class Project:
             name=data.get('name', ""),
             client=data.get('client', ""),
             deadline=data.get('deadline', ""),
-            budget=data.get('budget', 0)
+            budget=data.get('budget', 0),
+            created_at=data.get('created_at')
         )
 
     def validate(self):

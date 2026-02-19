@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushBut
                             QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
                             QLineEdit, QComboBox, QMessageBox, QFileDialog)
 from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt, QSize
 
 from src.main.service.controllers import TaskController, ProjectController, DeveloperController, ExportController
@@ -233,7 +234,7 @@ class TasksTab(QWidget):
                 }.get(task.status, '#FFFFFF')
                 
                 for col in range(self.tasks_table.columnCount()):
-                    self.tasks_table.item(row, col).setBackground(Qt.QColor(status_color))
+                    self.tasks_table.item(row, col).setBackground(QColor(status_color))
     
     def apply_filters(self):
         """

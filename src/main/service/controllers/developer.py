@@ -1,9 +1,11 @@
 from src.main.service import DeveloperService
 
 
-class DeveloperController:
+from .base import BaseController
+
+class DeveloperController(BaseController):
     def __init__(self, service=None):
-        super().__init__(service or DeveloperService())
+        self.service = service or DeveloperService()
 
     def get_all_developers(self):
         return self.execute_service_method('get_all_developers')

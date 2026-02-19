@@ -1,9 +1,11 @@
 from src.main.service import TaskService
 
 
-class TaskController:
+from .base import BaseController
+
+class TaskController(BaseController):
     def __init__(self, service=None):
-        super().__init__(service or TaskService())
+        self.service = service or TaskService()
 
     def get_all_tasks(self):
         return self.execute_service_method('get_all_tasks')

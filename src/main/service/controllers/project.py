@@ -1,9 +1,11 @@
 from src.main.service import ProjectService
 
 
-class ProjectController:
+from .base import BaseController
+
+class ProjectController(BaseController):
     def __init__(self, service=None):
-        super().__init__(service or ProjectService())
+        self.service = service or ProjectService()
 
     def get_all_projects(self):
         return self.execute_service_method('get_all_projects')

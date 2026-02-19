@@ -1,9 +1,11 @@
 from src.main.service.reports import ReportService
 
 
-class ReportController:
+from .base import BaseController
+
+class ReportController(BaseController):
     def __init__(self, service=None):
-        super().__init__(service or ReportService())
+        self.service = service or ReportService()
 
     def get_overdue_tasks_report(self):
         return self.execute_service_method('get_overdue_tasks_report')

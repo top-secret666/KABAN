@@ -2,13 +2,17 @@ from .db_manager import DBManager
 
 
 class Task:
-    def __init__(self, id=None, project_id=None, developer_id=None, description="", status="в работе", hours_worked=0):
+    def __init__(self, id=None, project_id=None, developer_id=None, description="", status="в работе", hours_worked=0, created_at=None, updated_at=None, project_name=None, developer_name=None):
         self.id = id
         self.project_id = project_id
         self.developer_id = developer_id
         self.description = description
         self.status = status
         self.hours_worked = hours_worked
+        self.created_at = created_at
+        self.updated_at = updated_at
+        self.project_name = project_name
+        self.developer_name = developer_name
         self.db_manager = DBManager()
 
         self._project = None
@@ -21,7 +25,11 @@ class Task:
             'developer_id': self.developer_id,
             'description': self.description,
             'status': self.status,
-            'hours_worked': self.hours_worked
+            'hours_worked': self.hours_worked,
+            'created_at': self.created_at,
+            'updated_at': self.updated_at,
+            'project_name': self.project_name,
+            'developer_name': self.developer_name
         }
 
     @classmethod
@@ -32,7 +40,11 @@ class Task:
             developer_id=data.get('developer_id'),
             description=data.get('description', ""),
             status=data.get('status', "в работе"),
-            hours_worked=data.get('hours_worked', 0)
+            hours_worked=data.get('hours_worked', 0),
+            created_at=data.get('created_at'),
+            updated_at=data.get('updated_at'),
+            project_name=data.get('project_name'),
+            developer_name=data.get('developer_name')
         )
 
     def validate(self):

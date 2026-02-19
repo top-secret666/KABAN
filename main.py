@@ -48,9 +48,19 @@ def main():
 
         # Если вход успешен, отображаем главное окно
         if hasattr(login_window, 'exec_'):
-            if login_window.exec_():
-                main_window = MainWindow(login_window.user)
-                main_window.show()
+            result = login_window.exec_()
+            print(f"LoginWindow exec_() result: {result}")
+            if result:
+                print(f"LoginWindow user: {getattr(login_window, 'user', None)}")
+                if hasattr(login_window, 'user') and login_window.user:
+                    global main_window
+                    main_window = MainWindow(login_window.user)
+                    print("MainWindow created")
+                    main_window.show()
+                else:
+                    print("User not found after login!")
+            else:
+                print("Login cancelled or failed.")
         else:
             login_window.exec_()
 
