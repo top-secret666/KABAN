@@ -378,11 +378,6 @@ class DashboardTab(QWidget):
             import traceback
             print(f"Ошибка при обновлении дашборда: {str(e)}")
             print(traceback.format_exc())
-            "Проекты",
-            len(projects),
-            "ui/resources/icons/logo.png",  # Используем специфичную иконку для проектов
-            "#1976D2",
-            "Всего активных проектов"  # Добавляем подпись
         )
 
         # Статистика по задачам
