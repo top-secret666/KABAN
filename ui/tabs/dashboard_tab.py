@@ -35,6 +35,7 @@ class DashboardTab(QWidget):
 
         title_label = QLabel(f"Добро пожаловать, {self.user.full_name}!")
         title_label.setFont(QFont('Arial', 18, QFont.Bold))
+        title_label.setObjectName("KanbanTitle")
         header_layout.addWidget(title_label)
 
         refresh_button = QPushButton("Обновить")
@@ -56,8 +57,35 @@ class DashboardTab(QWidget):
         scroll_layout.setSpacing(20)
 
         # Добавление виджетов с информацией
-        scroll_layout.addLayout(self.create_stats_widgets())
-        scroll_layout.addWidget(self.create_recent_tasks_widget())
+        # Пример Kanban-колонок (можно доработать под вашу структуру)
+        kanban_layout = QHBoxLayout()
+        statuses = [
+            ("Новая", "#E3F2FD"),
+            ("В работе", "#FFF8E1"),
+            ("На проверке", "#F3E5F5"),
+            ("Завершено", "#E8F5E9")
+        ]
+        for status, color in statuses:
+            column = QFrame()
+            column.setObjectName("KanbanColumn")
+            column.setMinimumWidth(220)
+            column.setMaximumWidth(320)
+            column_layout = QVBoxLayout(column)
+            column_layout.setSpacing(12)
+            column_layout.addWidget(QLabel(f"<b>{status}</b>"))
+            # Пример карточки задачи
+            for i in range(2):
+                card = QWidget()
+                card.setObjectName("KanbanCard")
+                card_layout = QVBoxLayout(card)
+                card_layout.setContentsMargins(8, 8, 8, 8)
+                card_layout.addWidget(QLabel(f"Задача {i+1} для {status}"))
+                column_layout.addWidget(card)
+            column_layout.addStretch()
+            kanban_layout.addWidget(column)
+        scroll_layout.addLayout(kanban_layout)
+        # scroll_layout.addLayout(self.create_stats_widgets())
+        # scroll_layout.addWidget(self.create_recent_tasks_widget())
         # Добавляем уведомления только для не-разработчиков
         if self.user.role != 'developer':
             scroll_layout.addWidget(self.create_notifications_widget())
