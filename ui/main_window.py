@@ -24,12 +24,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.user = user
         self.init_ui()
-        # Подключаем современный Kanban QSS
-        try:
-            with open('ui/resources/kanban_modern.qss', 'r', encoding='utf-8') as f:
-                self.setStyleSheet(f.read())
-        except Exception as e:
-            print(f"Не удалось загрузить стиль: {e}")
+        self.setStyleSheet(GLOBAL_STYLE)
 
     def init_ui(self):
         """
