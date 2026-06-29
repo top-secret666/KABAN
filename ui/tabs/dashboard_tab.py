@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                              QFrame, QScrollArea, QSizePolicy, QGridLayout, QTabWidget,
-                             QGraphicsDropShadowEffect, QSpacerItem)
+                             QGraphicsDropShadowEffect, QSpacerItem, QMessageBox)
 from PyQt5.QtGui import QFont, QIcon, QColor, QPainter, QPainterPath, QBrush, QPen
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve
 
 from controllers import ProjectController, TaskController, DeveloperController, NotificationController
+from ui.dialogs.task_dialog import TaskDialog
 from ui.resources.icon_helper import get_icon
 from ui.resources.styles import (
     STATUS_NEW, STATUS_NEW_BG, STATUS_PROGRESS, STATUS_PROGRESS_BG,
@@ -76,8 +77,10 @@ class KanbanCard(QFrame):
 
 class KanbanColumn(QFrame):
     """Колонка Kanban-доски в стиле Bitrix24"""
-    def __init__(self, title, tasks_list, color, bg_color, object_suffix, parent=None):
+    def __init__(self, title, tasks_list, color, bg_color, object_suffix,
+                 on_add_task=None, parent=None):
         super().__init__(parent)
+        self._on_add_task = on_add_task
         self.setObjectName(f"kanban_column_{object_suffix}")
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setMinimumWidth(260)
@@ -136,6 +139,9 @@ class KanbanColumn(QFrame):
         add_btn = QPushButton("+ Добавить задачу")
         add_btn.setObjectName("kanban_add")
         add_btn.setFixedHeight(42)
+        add_btn.setCursor(Qt.PointingHandCursor)
+        if self._on_add_task:
+            add_btn.clicked.connect(self._on_add_task)
         cards_layout.addWidget(add_btn)
 
         cards_layout.addStretch()
@@ -236,11 +242,14 @@ class DashboardTab(QWidget):
         return self.project_controller.get_all_projects()
 
     def init_ui(self):
+        if hasattr(self, '_content_layout'):
+            self._reload_dashboard()
+            return
+
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # ═══════════ HEADER ═══════════
         header = QFrame()
         header.setStyleSheet(f"background-color: {BG_CARD}; border-bottom: 1px solid {BORDER};")
         header.setFixedHeight(64)
@@ -253,18 +262,16 @@ class DashboardTab(QWidget):
         greeting.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none;")
         self._greeting = greeting
         header_layout.addWidget(greeting)
-
         header_layout.addStretch()
 
         refresh_btn = QPushButton("⟳  Обновить")
         refresh_btn.setObjectName("flat")
         refresh_btn.setFixedHeight(36)
+        refresh_btn.setCursor(Qt.PointingHandCursor)
         refresh_btn.clicked.connect(self.refresh_data)
         header_layout.addWidget(refresh_btn)
-
         main_layout.addWidget(header)
 
-        # ═══════════ CONTENT ═══════════
         scroll_area = QScrollArea()
         scroll_area.setWidgetResizable(True)
         scroll_area.setFrameShape(QFrame.NoFrame)
@@ -274,11 +281,16 @@ class DashboardTab(QWidget):
         content = QWidget()
         content.setStyleSheet(f"background-color: {BG_MAIN};")
         self._content = content
-        content_layout = QVBoxLayout(content)
-        content_layout.setContentsMargins(24, 20, 24, 20)
-        content_layout.setSpacing(20)
+        self._content_layout = QVBoxLayout(content)
+        self._content_layout.setContentsMargins(24, 20, 24, 20)
+        self._content_layout.setSpacing(20)
 
-        content_layout.addLayout(self._build_stats_row())
+        self._stats_host = QWidget()
+        self._stats_host.setStyleSheet("background: transparent; border: none;")
+        self._stats_layout = QHBoxLayout(self._stats_host)
+        self._stats_layout.setContentsMargins(0, 0, 0, 0)
+        self._stats_layout.setSpacing(16)
+        self._content_layout.addWidget(self._stats_host)
 
         board_header = QHBoxLayout()
         board_title = QLabel("📋  Kanban-доска")
@@ -287,20 +299,80 @@ class DashboardTab(QWidget):
         self._board_title = board_title
         board_header.addWidget(board_title)
         board_header.addStretch()
-        content_layout.addLayout(board_header)
 
-        content_layout.addWidget(self._build_kanban_board(), stretch=1)
+        add_task_btn = QPushButton("＋  Новая задача")
+        add_task_btn.setObjectName("primary")
+        add_task_btn.setFixedHeight(36)
+        add_task_btn.setCursor(Qt.PointingHandCursor)
+        add_task_btn.setIcon(get_icon('add'))
+        add_task_btn.clicked.connect(lambda: self.add_task('новая'))
+        board_header.addWidget(add_task_btn)
+        self._content_layout.addLayout(board_header)
+
+        self._kanban_host = QFrame()
+        self._kanban_host.setStyleSheet("background: transparent; border: none;")
+        self._kanban_layout = QHBoxLayout(self._kanban_host)
+        self._kanban_layout.setContentsMargins(0, 0, 0, 0)
+        self._kanban_layout.setSpacing(14)
+        self._content_layout.addWidget(self._kanban_host, stretch=1)
 
         if self.user.role != 'developer':
-            content_layout.addWidget(self.create_notifications_widget())
+            self._notifications_host = QFrame()
+            self._notifications_host.setFrameShape(QFrame.NoFrame)
+            self._notifications_host.setObjectName('notifications_panel')
+            self._notifications_layout = QVBoxLayout(self._notifications_host)
+            self._notifications_layout.setContentsMargins(20, 16, 20, 16)
+            self._notifications_layout.setSpacing(12)
+            self._content_layout.addWidget(self._notifications_host)
+        else:
+            self._notifications_host = None
+            self._notifications_layout = None
 
         scroll_area.setWidget(content)
         main_layout.addWidget(scroll_area, stretch=1)
 
-    def _build_stats_row(self):
-        row = QHBoxLayout()
-        row.setSpacing(16)
+        self._reload_dashboard()
 
+    def _clear_layout(self, layout):
+        if layout is None:
+            return
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+            sub = item.layout()
+            if sub:
+                self._clear_layout(sub)
+
+    def _reload_dashboard(self):
+        self._clear_layout(self._stats_layout)
+        for card in self._build_stat_cards():
+            self._stats_layout.addWidget(card)
+
+        self._clear_layout(self._kanban_layout)
+        all_tasks = self._load_tasks()
+        for status_info in self.KANBAN_STATUSES:
+            filtered = [
+                t for t in all_tasks
+                if getattr(t, 'status', '').lower() == status_info['key']
+            ]
+            status_key = status_info['key']
+            column = KanbanColumn(
+                title=status_info['title'],
+                tasks_list=filtered,
+                color=status_info['color'],
+                bg_color=status_info['bg'],
+                object_suffix=status_info['suffix'],
+                on_add_task=lambda checked=False, s=status_key: self.add_task(s),
+            )
+            self._kanban_layout.addWidget(column)
+
+        if self._notifications_layout is not None:
+            self._clear_layout(self._notifications_layout)
+            self._populate_notifications(self._notifications_layout)
+
+    def _build_stat_cards(self):
         all_tasks = self._load_tasks()
         projects_result = self._load_projects()
         projects = projects_result.get('data', []) if projects_result.get('success') else []
@@ -309,35 +381,73 @@ class DashboardTab(QWidget):
         progress_count = len([t for t in all_tasks if getattr(t, 'status', '') == 'в работе'])
         done_count = len([t for t in all_tasks if getattr(t, 'status', '') == 'завершено'])
 
-        row.addWidget(StatCard("Проекты", len(projects), PRIMARY_COLOR, "📁", "Всего активных"))
-        row.addWidget(StatCard("Всего задач", len(all_tasks), "#6C5CE7", "📝", f"Новых: {new_count}"))
-        row.addWidget(StatCard("В работе", progress_count, STATUS_PROGRESS, "🔥", "Активные задачи"))
-        row.addWidget(StatCard("Завершено", done_count, STATUS_DONE, "✅", "Выполненных"))
+        return [
+            StatCard("Проекты", len(projects), PRIMARY_COLOR, "📁", "Всего активных"),
+            StatCard("Всего задач", len(all_tasks), "#6C5CE7", "📝", f"Новых: {new_count}"),
+            StatCard("В работе", progress_count, STATUS_PROGRESS, "🔥", "Активные задачи"),
+            StatCard("Завершено", done_count, STATUS_DONE, "✅", "Выполненных"),
+        ]
 
-        return row
+    def _populate_notifications(self, layout):
+        header_layout = QHBoxLayout()
+        title_label = QLabel("🔔  Уведомления")
+        title_label.setFont(QFont('Segoe UI', 14, QFont.DemiBold))
+        title_label.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none;")
+        header_layout.addWidget(title_label)
 
-    def _build_kanban_board(self):
-        board_frame = QFrame()
-        board_frame.setStyleSheet("background: transparent; border: none;")
+        mark_all_button = QPushButton("Отметить все как прочитанные")
+        mark_all_button.setObjectName("flat")
+        mark_all_button.clicked.connect(self.mark_all_notifications_as_read)
+        header_layout.addWidget(mark_all_button, alignment=Qt.AlignRight)
+        layout.addLayout(header_layout)
 
-        board_layout = QHBoxLayout(board_frame)
-        board_layout.setContentsMargins(0, 0, 0, 0)
-        board_layout.setSpacing(14)
-
-        all_tasks = self._load_tasks()
-
-        for status_info in self.KANBAN_STATUSES:
-            filtered = [t for t in all_tasks if getattr(t, 'status', '').lower() == status_info['key']]
-            column = KanbanColumn(
-                title=status_info['title'],
-                tasks_list=filtered,
-                color=status_info['color'],
-                bg_color=status_info['bg'],
-                object_suffix=status_info['suffix']
+        try:
+            notifications_result = self.notification_controller.get_all_notifications(
+                limit=5, only_unread=True
             )
-            board_layout.addWidget(column)
+            notifications = (
+                notifications_result.get('data', [])
+                if isinstance(notifications_result, dict) else []
+            )
+            if notifications:
+                for notification in notifications:
+                    layout.addWidget(self.create_notification_item(notification))
+            else:
+                no_lbl = QLabel("Нет новых уведомлений")
+                no_lbl.setAlignment(Qt.AlignCenter)
+                layout.addWidget(no_lbl)
+        except Exception as e:
+            error_label = QLabel(f"Ошибка загрузки уведомлений: {str(e)}")
+            error_label.setAlignment(Qt.AlignCenter)
+            error_label.setStyleSheet("color: red;")
+            layout.addWidget(error_label)
 
-        return board_frame
+    def add_task(self, default_status='новая'):
+        default_developer_id = None
+        if self.user.role == 'developer':
+            dev_result = self.developer_controller.get_developer_by_user_id(self.user.id)
+            if dev_result.get('success') and dev_result.get('data'):
+                default_developer_id = dev_result['data'].id
+
+        dialog = TaskDialog(
+            self,
+            default_status=default_status,
+            default_developer_id=default_developer_id,
+        )
+        if dialog.exec_():
+            task_data = {
+                'project_id': dialog.project_combo.currentData(),
+                'developer_id': dialog.developer_combo.currentData(),
+                'description': dialog.description_input.toPlainText(),
+                'status': dialog.status_combo.currentText(),
+                'hours_worked': float(dialog.hours_input.text() or 0),
+            }
+            result = self.task_controller.create_task(task_data)
+            if result['success']:
+                QMessageBox.information(self, "Успех", "Задача успешно добавлена")
+                self._reload_dashboard()
+            else:
+                QMessageBox.critical(self, "Ошибка", result['error_message'])
 
     def show_all_tasks(self):
         window = self.window()
@@ -368,14 +478,7 @@ class DashboardTab(QWidget):
             self.task_controller = TaskController()
             self.developer_controller = DeveloperController()
             self.notification_controller = NotificationController()
-
-            layout = self.layout()
-            if layout:
-                while layout.count():
-                    item = layout.takeAt(0)
-                    if item.widget():
-                        item.widget().deleteLater()
-                self.init_ui()
+            self._reload_dashboard()
         except Exception as e:
             import traceback
             print(f"Ошибка при обновлении дашборда: {str(e)}")
@@ -385,40 +488,10 @@ class DashboardTab(QWidget):
         frame = QFrame()
         frame.setFrameShape(QFrame.NoFrame)
         frame.setObjectName('notifications_panel')
-
         layout = QVBoxLayout(frame)
         layout.setContentsMargins(20, 16, 20, 16)
         layout.setSpacing(12)
-
-        header_layout = QHBoxLayout()
-        title_label = QLabel("🔔  Уведомления")
-        title_label.setFont(QFont('Segoe UI', 14, QFont.DemiBold))
-        title_label.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none;")
-        header_layout.addWidget(title_label)
-
-        mark_all_button = QPushButton("Отметить все как прочитанные")
-        mark_all_button.setObjectName("flat")
-        mark_all_button.clicked.connect(self.mark_all_notifications_as_read)
-        header_layout.addWidget(mark_all_button, alignment=Qt.AlignRight)
-        layout.addLayout(header_layout)
-
-        try:
-            notifications_result = self.notification_controller.get_all_notifications(limit=5, only_unread=True)
-            notifications = notifications_result.get('data', []) if isinstance(notifications_result, dict) else []
-
-            if notifications:
-                for notification in notifications:
-                    layout.addWidget(self.create_notification_item(notification))
-            else:
-                no_lbl = QLabel("Нет новых уведомлений")
-                no_lbl.setAlignment(Qt.AlignCenter)
-                layout.addWidget(no_lbl)
-        except Exception as e:
-            error_label = QLabel(f"Ошибка загрузки уведомлений: {str(e)}")
-            error_label.setAlignment(Qt.AlignCenter)
-            error_label.setStyleSheet("color: red;")
-            layout.addWidget(error_label)
-
+        self._populate_notifications(layout)
         return frame
 
     def create_notification_item(self, notification):
@@ -454,9 +527,9 @@ class DashboardTab(QWidget):
     def mark_all_notifications_as_read(self):
         result = self.notification_controller.mark_all_as_read()
         if result['success']:
-            self.refresh_data()
+            self._reload_dashboard()
 
     def mark_notification_as_read(self, notification_id):
         result = self.notification_controller.mark_as_read(notification_id)
         if result['success']:
-            self.refresh_data()
+            self._reload_dashboard()

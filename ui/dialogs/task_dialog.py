@@ -7,8 +7,10 @@ from ui.resources.icon_helper import get_icon
 
 
 class TaskDialog(BaseDialog):
-    def __init__(self, parent=None, task=None):
+    def __init__(self, parent=None, task=None, default_status=None, default_developer_id=None):
         self.task = task
+        self._default_status = default_status
+        self._default_developer_id = default_developer_id
         self.task_controller = TaskController()
         self.project_controller = ProjectController()
         self.developer_controller = DeveloperController()
@@ -64,6 +66,15 @@ class TaskDialog(BaseDialog):
             if si >= 0:
                 self.status_combo.setCurrentIndex(si)
             self.hours_input.setText(str(self.task.hours_worked or 0))
+        else:
+            if self._default_status:
+                si = self.status_combo.findText(self._default_status)
+                if si >= 0:
+                    self.status_combo.setCurrentIndex(si)
+            if self._default_developer_id is not None:
+                di = self.developer_combo.findData(self._default_developer_id)
+                if di >= 0:
+                    self.developer_combo.setCurrentIndex(di)
 
     def _load_projects(self):
         result = self.project_controller.get_all_projects()
