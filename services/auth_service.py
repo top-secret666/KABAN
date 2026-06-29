@@ -24,10 +24,7 @@ class AuthService(BaseService):
 
             # Для отладки: вывод информации о пользователе
             print(f"Найден пользователь: {user.username}, роль: {user.role}")
-            print(f"Сохраненный пароль: {user.password}")
-            print(f"Введенный пароль: {password}")
 
-            # Проверка пароля
             if not user.check_password(password):
                 raise BusinessException("Неверное имя пользователя или пароль")
 

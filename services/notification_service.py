@@ -165,6 +165,15 @@ class NotificationService(BaseService):
                 raise e
             raise BusinessException(f"Ошибка при удалении уведомлений: {str(e)}")
 
+    def _notification_exists(self, related_id, related_type):
+        query = """
+            SELECT id FROM notifications
+            WHERE related_id = ? AND related_type = ? AND is_read = 0
+            LIMIT 1
+        """
+        cursor = self.execute_query(query, [related_id, related_type])
+        return cursor.fetchone() is not None
+
     def check_overdue_projects(self):
         """
         Проверяет просроченные проекты и создает уведомления
@@ -192,6 +201,9 @@ class NotificationService(BaseService):
                 project_id = row[0]
                 project_name = row[1]
                 deadline = row[2]
+
+                if self._notification_exists(project_id, 'project_overdue'):
+                    continue
 
                 print(f"Создание уведомления для просроченного проекта: {project_name} (ID: {project_id})")
 
