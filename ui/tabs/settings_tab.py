@@ -393,6 +393,7 @@ class SettingsTab(QWidget):
             idx = self.bg_preset_combo.findData('custom')
             if idx >= 0:
                 self.bg_preset_combo.setCurrentIndex(idx)
+            self._preview_theme()
 
     def save_interface_settings(self):
         config = self._build_theme_config()
