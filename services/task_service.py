@@ -124,7 +124,8 @@ class TaskService(BaseService):
                     developer_id=validated_data.get('developer_id'),
                     description=validated_data['description'],
                     status=validated_data.get('status', 'новая'),
-                    hours_worked=validated_data.get('hours_worked', 0)
+                    hours_worked=validated_data.get('hours_worked', 0),
+                    db_manager=self.db_manager,
                 )
             
                 # Сохранение в базу данных
