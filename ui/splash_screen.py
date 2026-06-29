@@ -6,7 +6,6 @@ from ui.resources.theme_manager import current_palette, get_login_styles, get_co
 
 
 class SplashScreen(QWidget):
-    """Заставка при загрузке в стиле Bitrix24."""
 
     def __init__(self):
         super().__init__()

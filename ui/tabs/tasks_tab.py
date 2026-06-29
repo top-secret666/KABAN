@@ -155,45 +155,30 @@ class TasksTab(QWidget):
                 )
 
     def load_tasks(self):
-        """
-        Загрузка списка задач
-        """
-        # Очистка таблицы
         self.tasks_table.setRowCount(0)
 
         try:
-            # Если пользователь - разработчик, показываем только его задачи
             if self.user.role == 'developer':
-                # Сначала получаем ID разработчика по ID пользователя
                 developer_result = self.developer_controller.get_developer_by_user_id(self.user.id)
-
                 if developer_result['success'] and developer_result['data']:
-                    developer = developer_result['data']
-                    result = self.task_controller.get_tasks_by_developer(developer.id)
+                    result = self.task_controller.get_tasks_by_developer(developer_result['data'].id)
                 else:
                     result = {'success': True, 'data': []}
             else:
                 result = self.task_controller.get_all_tasks()
 
             if result['success']:
-                tasks = result['data']
-
-                for i, task in enumerate(tasks):
+                for i, task in enumerate(result['data']):
                     self.tasks_table.insertRow(i)
 
-                    # Заполнение ячеек таблицы
                     id_item = QTableWidgetItem(str(task.id))
-                    project_name = getattr(task, 'project_name', None) or 'Неизвестный проект'
-                    project_item = QTableWidgetItem(project_name)
-                    developer_name = getattr(task, 'developer_name', None) or 'Не назначен'
-                    developer_item = QTableWidgetItem(developer_name)
+                    project_item = QTableWidgetItem(getattr(task, 'project_name', None) or 'Неизвестный проект')
+                    developer_item = QTableWidgetItem(getattr(task, 'developer_name', None) or 'Не назначен')
                     description_item = QTableWidgetItem(task.description or '')
                     status_item = QTableWidgetItem(task.status or '')
                     hours_item = QTableWidgetItem(str(task.hours_worked or 0))
-                    created_at = getattr(task, 'created_at', None) or ''
-                    created_item = QTableWidgetItem(str(created_at))
+                    created_item = QTableWidgetItem(str(getattr(task, 'created_at', None) or ''))
 
-                    # Сохраняем ID проекта и разработчика в пользовательских данных
                     id_item.setData(Qt.UserRole, task.id)
                     project_item.setData(Qt.UserRole, task.project_id)
                     developer_item.setData(Qt.UserRole, task.developer_id)
@@ -211,97 +196,66 @@ class TasksTab(QWidget):
         except Exception:
             pass
 
-
     def apply_filters(self):
-        """
-        Применение фильтров к таблице
-        """
         search_text = self.search_input.text().lower()
         project_id = self.project_combo.currentData()
         developer_id = self.developer_combo.currentData()
         status = self.status_combo.currentData()
 
         for row in range(self.tasks_table.rowCount()):
-            # Получаем данные из строки таблицы
-            task_id_item = self.tasks_table.item(row, 0)
             project_item = self.tasks_table.item(row, 1)
             developer_item = self.tasks_table.item(row, 2)
             description = self.tasks_table.item(row, 3).text().lower()
             task_status = self.tasks_table.item(row, 4).text()
-            
-            # Получаем ID проекта и разработчика из пользовательских данных
             task_project_id = project_item.data(Qt.UserRole)
             task_developer_id = developer_item.data(Qt.UserRole)
 
-            # Проверка соответствия фильтрам
-            description_match = search_text in description
-            project_match = not project_id or task_project_id == project_id
-            developer_match = not developer_id or task_developer_id == developer_id
-            status_match = not status or task_status == status
-            
-            # Отображение/скрытие строки
-            should_show = description_match and project_match and developer_match and status_match
+            should_show = (
+                search_text in description
+                and (not project_id or task_project_id == project_id)
+                and (not developer_id or task_developer_id == developer_id)
+                and (not status or task_status == status)
+            )
             self.tasks_table.setRowHidden(row, not should_show)
 
     def add_item(self):
-        """
-        Добавление новой задачи
-        """
         dialog = TaskDialog(self)
         if dialog.exec_():
-            # Получение данных из диалога
             task_data = {
                 'project_id': dialog.project_combo.currentData(),
                 'developer_id': dialog.developer_combo.currentData(),
                 'description': dialog.description_input.toPlainText(),
                 'status': dialog.status_combo.currentText(),
-                'hours_worked': float(dialog.hours_input.text() or 0)
+                'hours_worked': float(dialog.hours_input.text() or 0),
             }
-            
-            # Добавление задачи
             result = self.task_controller.create_task(task_data)
-            
             if result['success']:
                 QMessageBox.information(self, "Успех", "Задача успешно добавлена")
                 self.refresh_data()
             else:
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
-    
+
     def edit_item(self):
-        """
-        Редактирование выбранной задачи
-        """
-        # Получение выбранной строки
         selected_rows = self.tasks_table.selectedItems()
         if not selected_rows:
             QMessageBox.warning(self, "Предупреждение", "Выберите задачу для редактирования")
             return
-        
-        # Получение ID выбранной задачи
+
         row = selected_rows[0].row()
         task_id = int(self.tasks_table.item(row, 0).text())
-        
-        # Получение данных задачи
         result = self.task_controller.get_task_by_id(task_id)
-        
+
         if result['success']:
-            task = result['data']
-            
-            # Открытие диалога редактирования
-            dialog = TaskDialog(self, task)
+            dialog = TaskDialog(self, result['data'])
             if dialog.exec_():
-                # Получение данных из диалога
                 task_data = {
                     'project_id': dialog.project_combo.currentData(),
                     'developer_id': dialog.developer_combo.currentData(),
                     'description': dialog.description_input.toPlainText(),
                     'status': dialog.status_combo.currentText(),
-                    'hours_worked': float(dialog.hours_input.text() or 0)
+                    'hours_worked': float(dialog.hours_input.text() or 0),
                 }
-                
-                # Обновление задачи
                 update_result = self.task_controller.update_task(task_id, task_data)
-                
                 if update_result['success']:
                     QMessageBox.information(self, "Успех", "Задача успешно обновлена")
                     self.refresh_data()
@@ -309,33 +263,25 @@ class TasksTab(QWidget):
                     QMessageBox.critical(self, "Ошибка", update_result['error_message'])
         else:
             QMessageBox.critical(self, "Ошибка", result['error_message'])
-    
+
     def delete_item(self):
-        """
-        Удаление выбранной задачи
-        """
-        # Получение выбранной строки
         selected_rows = self.tasks_table.selectedItems()
         if not selected_rows:
             QMessageBox.warning(self, "Предупреждение", "Выберите задачу для удаления")
             return
-        
-        # Получение ID выбранной задачи
+
         row = selected_rows[0].row()
         task_id = int(self.tasks_table.item(row, 0).text())
         task_description = self.tasks_table.item(row, 3).text()
-        
-        # Подтверждение удаления
+
         reply = QMessageBox.question(
-            self, "Подтверждение", 
+            self, "Подтверждение",
             f"Вы уверены, что хотите удалить задачу '{task_description}'?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
         )
-        
+
         if reply == QMessageBox.Yes:
-            # Удаление задачи
             result = self.task_controller.delete_task(task_id)
-            
             if result['success']:
                 QMessageBox.information(self, "Успех", "Задача успешно удалена")
                 self.refresh_data()
@@ -343,65 +289,44 @@ class TasksTab(QWidget):
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
 
     def refresh_data(self):
-        """Обновление данных в таблице."""
         self.load_tasks()
         self.load_projects_and_developers()
         self.apply_filters()
 
     def export_to_csv(self):
-        """
-        Экспорт данных в CSV
-        """
-        # Открытие диалога сохранения файла
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить CSV", "", "CSV Files (*.csv);;All Files (*)"
         )
-        
-        if file_path:
-            # Подготовка данных для экспорта
-            headers = ["ID", "Проект", "Разработчик", "Описание", "Статус", "Часы", "Дата создания"]
-            data = []
-            
-            for row in range(self.tasks_table.rowCount()):
-                if not self.tasks_table.isRowHidden(row):
-                    row_data = []
-                    for col in range(self.tasks_table.columnCount()):
-                        row_data.append(self.tasks_table.item(row, col).text())
-                    data.append(row_data)
-            
-            # Экспорт в CSV
-            result = self.export_controller.export_data_to_csv(data, headers, file_path)
-            
-            if result['success']:
-                QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
-            else:
-                QMessageBox.critical(self, "Ошибка", result['error_message'])
-    
+        if not file_path:
+            return
+
+        headers = ["ID", "Проект", "Разработчик", "Описание", "Статус", "Часы", "Дата создания"]
+        data = []
+        for row in range(self.tasks_table.rowCount()):
+            if not self.tasks_table.isRowHidden(row):
+                data.append([self.tasks_table.item(row, col).text() for col in range(self.tasks_table.columnCount())])
+
+        result = self.export_controller.export_data_to_csv(data, headers, file_path)
+        if result['success']:
+            QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
+        else:
+            QMessageBox.critical(self, "Ошибка", result['error_message'])
+
     def export_to_excel(self):
-        """
-        Экспорт данных в Excel
-        """
-        # Открытие диалога сохранения файла
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить Excel", "", "Excel Files (*.xlsx);;All Files (*)"
         )
-        
-        if file_path:
-            # Подготовка данных для экспорта
-            headers = ["ID", "Проект", "Разработчик", "Описание", "Статус", "Часы", "Дата создания"]
-            data = []
-            
-            for row in range(self.tasks_table.rowCount()):
-                if not self.tasks_table.isRowHidden(row):
-                    row_data = []
-                    for col in range(self.tasks_table.columnCount()):
-                        row_data.append(self.tasks_table.item(row, col).text())
-                    data.append(row_data)
-            
-            # Экспорт в Excel
-            result = self.export_controller.export_data_to_excel(data, headers, file_path, "Задачи")
-            
-            if result['success']:
-                QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
-            else:
-                QMessageBox.critical(self, "Ошибка", result['error_message'])
+        if not file_path:
+            return
+
+        headers = ["ID", "Проект", "Разработчик", "Описание", "Статус", "Часы", "Дата создания"]
+        data = []
+        for row in range(self.tasks_table.rowCount()):
+            if not self.tasks_table.isRowHidden(row):
+                data.append([self.tasks_table.item(row, col).text() for col in range(self.tasks_table.columnCount())])
+
+        result = self.export_controller.export_data_to_excel(data, headers, file_path, "Задачи")
+        if result['success']:
+            QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
+        else:
+            QMessageBox.critical(self, "Ошибка", result['error_message'])

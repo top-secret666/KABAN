@@ -5,7 +5,6 @@ from ui.widgets.page_header import PageHeader
 
 
 class TabPage(QWidget):
-    """Обёртка вкладки: заголовок + контентная область в стиле Bitrix24."""
 
     def __init__(self, title, subtitle='', scrollable=False, parent=None):
         super().__init__(parent)

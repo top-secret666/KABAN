@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                             QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
                             QLineEdit, QComboBox, QMessageBox, QFileDialog)
-from PyQt5.QtCore import Qt, QSize, QCoreApplication
+from PyQt5.QtCore import Qt, QSize
 
 from controllers import DeveloperController, ExportController
 from ui.dialogs.new_developer_dialog import NewDeveloperDialog
@@ -12,9 +12,6 @@ from ui.resources.table_helper import configure_table, refresh_table_theme, unhi
 
 
 class DevelopersTab(QWidget):
-    """
-    Вкладка "Разработчики" - управление разработчиками
-    """
     def __init__(self, user):
         super().__init__()
         self.user = user
@@ -54,7 +51,6 @@ class DevelopersTab(QWidget):
             fl.addStretch()
             main_layout.addWidget(filter_panel)
 
-            # Таблица разработчиков
             self.developers_table = QTableWidget()
             configure_table(self.developers_table)
             self.developers_table.setColumnCount(4)
@@ -65,7 +61,6 @@ class DevelopersTab(QWidget):
 
             main_layout.addWidget(self.developers_table)
 
-            # Панель кнопок
             buttons_layout = QHBoxLayout()
 
             self.add_button = QPushButton("Добавить")
@@ -98,26 +93,16 @@ class DevelopersTab(QWidget):
 
             main_layout.addLayout(buttons_layout)
 
-            # Загрузка данных
             self.load_developers()
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Не удалось инициализировать диалог: {str(e)}")
 
     def load_developers(self):
-        """
-        Загрузка списка разработчиков
-        """
-        # Очистка таблицы
         self.developers_table.setRowCount(0)
-
-        # Получение списка разработчиков
         result = self.developer_controller.get_all_developers()
 
         if result['success']:
-            developers = result['data']
-
-            # Заполнение таблицы
-            for row, developer in enumerate(developers):
+            for row, developer in enumerate(result['data']):
                 self.developers_table.insertRow(row)
 
                 id_item = QTableWidgetItem(str(developer.id))
@@ -134,143 +119,92 @@ class DevelopersTab(QWidget):
             unhide_all_rows(self.developers_table)
 
     def apply_filters(self):
-        """
-        Применение фильтров к таблице
-        """
         search_text = self.search_input.text().lower()
         position = self.position_combo.currentData()
 
         for row in range(self.developers_table.rowCount()):
             name = self.developers_table.item(row, 1).text().lower()
             dev_position = self.developers_table.item(row, 2).text()
-
-            # Проверка соответствия фильтрам
-            name_match = search_text in name
-            position_match = not position or dev_position == position
-
-            # Отображение/скрытие строки
-            self.developers_table.setRowHidden(row, not (name_match and position_match))
+            should_show = search_text in name and (not position or dev_position == position)
+            self.developers_table.setRowHidden(row, not should_show)
 
     def add_item(self):
-        """
-        Добавление нового разработчика
-        """
         try:
-            # Используем новый диалог
             dialog = NewDeveloperDialog(self)
-
-            # Отображаем диалог и ждем результат
             if dialog.exec_():
                 try:
-                    # Получение данных из диалога
                     developer_data = {
                         'full_name': dialog.name_input.text(),
                         'position': dialog.position_combo.currentText(),
                         'hourly_rate': float(dialog.rate_input.text())
                     }
 
-                    # Добавление разработчика
                     result = self.developer_controller.create_developer(developer_data)
-
                     if result['success']:
                         QMessageBox.information(self, "Успех", "Разработчик успешно добавлен")
                         self.refresh_data()
                     else:
-                        # Показываем сообщение об ошибке, но не закрываем диалог
                         QMessageBox.critical(self, "Ошибка", result['error_message'])
-                        # Повторно открываем диалог с теми же данными
                         return self.add_item()
                 except Exception as e:
                     QMessageBox.critical(self, "Ошибка", f"Ошибка при создании разработчика: {str(e)}")
-                    # Повторно открываем диалог с теми же данными
                     return self.add_item()
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка при создании диалога: {str(e)}")
-            import traceback
-            traceback.print_exc()
 
     def edit_item(self):
-        """
-        Редактирование выбранного разработчика
-        """
         try:
-            # Получение выбранной строки
             selected_rows = self.developers_table.selectedItems()
             if not selected_rows:
                 QMessageBox.warning(self, "Предупреждение", "Выберите разработчика для редактирования")
                 return
 
-            # Получение ID выбранного разработчика
             row = selected_rows[0].row()
             developer_id = int(self.developers_table.item(row, 0).text())
-
-            # Получение данных разработчика
             result = self.developer_controller.get_developer_by_id(developer_id)
 
             if result['success']:
-                developer = result['data']
-
-                # Используем новый диалог
-                dialog = NewDeveloperDialog(self, developer)
-
-                # Отображаем диалог и ждем результат
+                dialog = NewDeveloperDialog(self, result['data'])
                 if dialog.exec_():
                     try:
-                        # Получение данных из диалога
                         developer_data = {
                             'full_name': dialog.name_input.text(),
                             'position': dialog.position_combo.currentText(),
-                            'hourly_rate': float(dialog.rate_input.text())
+                            'hourly_rate': float(dialog.rate_input.text()),
                         }
-
-                        # Обновление разработчика
                         update_result = self.developer_controller.update_developer(developer_id, developer_data)
-
                         if update_result['success']:
                             QMessageBox.information(self, "Успех", "Разработчик успешно обновлен")
                             self.refresh_data()
                         else:
-                            # Показываем сообщение об ошибке, но не закрываем диалог
                             QMessageBox.critical(self, "Ошибка", update_result['error_message'])
-                            # Повторно открываем диалог с теми же данными
                             return self.edit_item()
                     except Exception as e:
                         QMessageBox.critical(self, "Ошибка", f"Ошибка при обновлении разработчика: {str(e)}")
-                        # Повторно открываем диалог с теми же данными
                         return self.edit_item()
             else:
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка при редактировании: {str(e)}")
-            import traceback
-            traceback.print_exc()
 
     def delete_item(self):
-        """
-        Удаление выбранного разработчика
-        """
-        # Получение выбранной строки
         selected_rows = self.developers_table.selectedItems()
         if not selected_rows:
             QMessageBox.warning(self, "Предупреждение", "Выберите разработчика для удаления")
             return
 
-        # Получение ID выбранного разработчика
         row = selected_rows[0].row()
         developer_id = int(self.developers_table.item(row, 0).text())
         developer_name = self.developers_table.item(row, 1).text()
 
-        # Подтверждение удаления
         reply = QMessageBox.question(
             self, "Подтверждение",
             f"Вы уверены, что хотите удалить разработчика '{developer_name}'?",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
-            # Удаление разработчика
             result = self.developer_controller.delete_developer(developer_id)
-
             if result['success']:
                 QMessageBox.information(self, "Успех", "Разработчик успешно удален")
                 self.refresh_data()
@@ -278,66 +212,43 @@ class DevelopersTab(QWidget):
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
 
     def refresh_data(self):
-        """
-        Обновление данных в таблице
-        """
         self.load_developers()
         self.apply_filters()
 
     def export_to_csv(self):
-        """
-        Экспорт данных в CSV
-        """
-        # Открытие диалога сохранения файла
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить CSV", "", "CSV Files (*.csv);;All Files (*)"
         )
+        if not file_path:
+            return
 
-        if file_path:
-            # Подготовка данных для экспорта
-            headers = ["ID", "ФИО", "Должность", "Ставка в час"]
-            data = []
+        headers = ["ID", "ФИО", "Должность", "Ставка в час"]
+        data = []
+        for row in range(self.developers_table.rowCount()):
+            if not self.developers_table.isRowHidden(row):
+                data.append([self.developers_table.item(row, col).text() for col in range(self.developers_table.columnCount())])
 
-            for row in range(self.developers_table.rowCount()):
-                if not self.developers_table.isRowHidden(row):
-                    row_data = []
-                    for col in range(self.developers_table.columnCount()):
-                        row_data.append(self.developers_table.item(row, col).text())
-                    data.append(row_data)
-
-            # Экспорт в CSV
-            result = self.export_controller.export_data_to_csv(data, headers, file_path)
-
-            if result['success']:
-                QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
-            else:
-                QMessageBox.critical(self, "Ошибка", result['error_message'])
+        result = self.export_controller.export_data_to_csv(data, headers, file_path)
+        if result['success']:
+            QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
+        else:
+            QMessageBox.critical(self, "Ошибка", result['error_message'])
 
     def export_to_excel(self):
-        """
-        Экспорт данных в Excel
-        """
-        # Открытие диалога сохранения файла
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить Excel", "", "Excel Files (*.xlsx);;All Files (*)"
         )
+        if not file_path:
+            return
 
-        if file_path:
-            # Подготовка данных для экспорта
-            headers = ["ID", "ФИО", "Должность", "Ставка в час"]
-            data = []
+        headers = ["ID", "ФИО", "Должность", "Ставка в час"]
+        data = []
+        for row in range(self.developers_table.rowCount()):
+            if not self.developers_table.isRowHidden(row):
+                data.append([self.developers_table.item(row, col).text() for col in range(self.developers_table.columnCount())])
 
-            for row in range(self.developers_table.rowCount()):
-                if not self.developers_table.isRowHidden(row):
-                    row_data = []
-                    for col in range(self.developers_table.columnCount()):
-                        row_data.append(self.developers_table.item(row, col).text())
-                    data.append(row_data)
-
-            # Экспорт в Excel
-            result = self.export_controller.export_data_to_excel(data, headers, file_path, "Разработчики")
-
-            if result['success']:
-                QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
-            else:
-                QMessageBox.critical(self, "Ошибка", result['error_message'])
+        result = self.export_controller.export_data_to_excel(data, headers, file_path, "Разработчики")
+        if result['success']:
+            QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
+        else:
+            QMessageBox.critical(self, "Ошибка", result['error_message'])

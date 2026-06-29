@@ -46,7 +46,7 @@ class AboutDialog(BaseDialog):
         about_tab.setOpenExternalLinks(True)
         about_tab.setHtml("""
             <h2>KABAN:manager</h2>
-            <p>Система управления проектами в стиле Bitrix24 Kanban.</p>
+            <p>Система управления проектами и задачами.</p>
             <ul>
                 <li>Управление проектами и задачами</li>
                 <li>Kanban-доска и дашборд</li>

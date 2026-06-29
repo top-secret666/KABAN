@@ -8,7 +8,6 @@ from controllers import AuthController
 
 
 class RegisterWindow(QDialog):
-    """Окно регистрации — стиль Bitrix24."""
 
     def __init__(self):
         super().__init__()

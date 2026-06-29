@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushBut
                              QFrame, QScrollArea, QSizePolicy, QMessageBox,
                              QGraphicsDropShadowEffect)
 from PyQt5.QtGui import QFont, QColor
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 
 from controllers import ProjectController, TaskController, DeveloperController, NotificationController
 from ui.dialogs.task_dialog import TaskDialog

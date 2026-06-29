@@ -80,7 +80,6 @@ def refresh_table_theme(table: QTableWidget, status_col=None, num_cols=None):
 def refresh_all_tables(root):
     """Обновляет все таблицы в дереве виджетов."""
     for table in root.findChildren(QTableWidget):
-        name = table.objectName()
         if table.property('task_status_col') is not None:
             refresh_table_theme(
                 table,

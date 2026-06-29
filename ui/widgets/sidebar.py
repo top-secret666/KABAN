@@ -19,7 +19,6 @@ class SidebarButton(QPushButton):
 
 
 class Sidebar(QFrame):
-    """Левая панель навигации."""
 
     navigated = pyqtSignal(int)
 

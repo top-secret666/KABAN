@@ -1,13 +1,10 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-                             QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
-                             QLineEdit, QComboBox, QMessageBox, QFileDialog, QDateEdit, QDialog)
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt, QSize, QDate
+                             QTableWidget, QTableWidgetItem, QHeaderView,
+                             QLineEdit, QComboBox, QMessageBox, QFileDialog, QDateEdit)
+from PyQt5.QtCore import Qt, QDate
 
 from controllers import ProjectController, ExportController
-from models import DBManager
 from ui.dialogs.new_project_dialog import NewProjectDialog
-from ui.dialogs.project_dialog import ProjectDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
 from ui.resources.icon_helper import get_icon
@@ -16,10 +13,6 @@ from ui.resources.combo_helper import reload_combo
 
 
 class ProjectsTab(QWidget):
-    """
-    Вкладка "Проекты" - управление проектами
-    """
-
     def __init__(self, user):
         super().__init__()
         self.user = user
@@ -67,7 +60,6 @@ class ProjectsTab(QWidget):
         fl.addStretch()
         main_layout.addWidget(filter_panel)
 
-        # Таблица проектов
         self.projects_table = QTableWidget()
         configure_table(self.projects_table)
         self.projects_table.setColumnCount(6)
@@ -78,7 +70,6 @@ class ProjectsTab(QWidget):
 
         main_layout.addWidget(self.projects_table)
 
-        # Панель кнопок
         buttons_layout = QHBoxLayout()
 
         self.add_button = QPushButton("Добавить")
@@ -111,20 +102,12 @@ class ProjectsTab(QWidget):
 
         main_layout.addLayout(buttons_layout)
 
-        # Загрузка данных
         self.load_projects()
 
     def load_projects(self):
-        """
-        Загрузка списка проектов
-        """
-        # Очистка таблицы
         self.projects_table.setRowCount(0)
 
-        # Получение списка проектов в зависимости от роли пользователя
         if self.user.role == 'developer':
-            # Для разработчика показываем только его проекты
-            # Сначала получаем ID разработчика по ID пользователя
             from controllers import DeveloperController
             developer_controller = DeveloperController()
 
@@ -164,7 +147,6 @@ class ProjectsTab(QWidget):
             self.update_client_filter(projects)
 
     def update_client_filter(self, projects):
-        """Обновление списка клиентов для фильтра."""
         clients = sorted({p.client for p in projects if p.client})
         reload_combo(
             self.client_combo,
@@ -174,7 +156,6 @@ class ProjectsTab(QWidget):
         )
 
     def apply_filters(self):
-        """Применение фильтров к таблице."""
         search_text = self.search_input.text().lower()
         client = self.client_combo.currentData()
         date_from_obj = self.date_from.date()
@@ -201,26 +182,16 @@ class ProjectsTab(QWidget):
             self.projects_table.setRowHidden(row, not should_show)
 
     def add_item(self):
-        """
-        Добавление нового проекта
-        """
         try:
-            # Используем новый диалог
             dialog = NewProjectDialog(self)
-
-            # Отображаем диалог и ждем результат
             if dialog.exec_():
-                # Получение данных из диалога
                 project_data = {
                     'name': dialog.name_input.text(),
                     'client': dialog.client_input.text(),
                     'deadline': dialog.deadline_input.date().toString("yyyy-MM-dd"),
-                    'budget': float(dialog.budget_input.text())
+                    'budget': float(dialog.budget_input.text()),
                 }
-
-                # Добавление проекта
                 result = self.project_controller.create_project(project_data)
-
                 if result['success']:
                     QMessageBox.information(self, "Успех", "Проект успешно добавлен")
                     self.refresh_data()
@@ -230,42 +201,26 @@ class ProjectsTab(QWidget):
             QMessageBox.critical(self, "Ошибка", f"Ошибка при создании диалога: {str(e)}")
 
     def edit_item(self):
-        """
-        Редактирование выбранного проекта
-        """
         try:
-            # Получение выбранной строки
             selected_rows = self.projects_table.selectedItems()
             if not selected_rows:
                 QMessageBox.warning(self, "Предупреждение", "Выберите проект для редактирования")
                 return
 
-            # Получение ID выбранного проекта
             row = selected_rows[0].row()
             project_id = int(self.projects_table.item(row, 0).text())
-
-            # Получение проекта
             result = self.project_controller.get_project_by_id(project_id)
 
             if result['success']:
-                project = result['data']
-
-                # Используем новый диалог
-                dialog = NewProjectDialog(self, project)
-
-                # Отображаем диалог и ждем результат
+                dialog = NewProjectDialog(self, result['data'])
                 if dialog.exec_():
-                    # Получение данных из диалога
                     project_data = {
                         'name': dialog.name_input.text(),
                         'client': dialog.client_input.text(),
                         'deadline': dialog.deadline_input.date().toString("yyyy-MM-dd"),
-                        'budget': float(dialog.budget_input.text())
+                        'budget': float(dialog.budget_input.text()),
                     }
-
-                    # Обновление проекта
                     update_result = self.project_controller.update_project(project_id, project_data)
-
                     if update_result['success']:
                         QMessageBox.information(self, "Успех", "Проект успешно обновлен")
                         self.refresh_data()
@@ -275,35 +230,25 @@ class ProjectsTab(QWidget):
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка при редактировании: {str(e)}")
-            import traceback
-            traceback.print_exc()
 
     def delete_item(self):
-        """
-        Удаление выбранного проекта
-        """
-        # Получение выбранной строки
         selected_rows = self.projects_table.selectedItems()
         if not selected_rows:
             QMessageBox.warning(self, "Предупреждение", "Выберите проект для удаления")
             return
 
-        # Получение ID выбранного проекта
         row = selected_rows[0].row()
         project_id = int(self.projects_table.item(row, 0).text())
         project_name = self.projects_table.item(row, 1).text()
 
-        # Подтверждение удаления
         reply = QMessageBox.question(
             self, "Подтверждение",
             f"Вы уверены, что хотите удалить проект '{project_name}'?\nВсе связанные задачи также будут удалены.",
-            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:
-            # Удаление проекта
             result = self.project_controller.delete_project(project_id)
-
             if result['success']:
                 QMessageBox.information(self, "Успех", "Проект успешно удален")
                 self.refresh_data()
@@ -311,67 +256,43 @@ class ProjectsTab(QWidget):
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
 
     def refresh_data(self):
-        """
-        Обновление данных в таблице
-        """
         self.load_projects()
         self.apply_filters()
 
     def export_to_csv(self):
-        """
-        Экспорт данных в CSV
-        """
-        # Открытие диалога сохранения файла
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить CSV", "", "CSV Files (*.csv);;All Files (*)"
         )
+        if not file_path:
+            return
 
-        if file_path:
-            # Подготовка данных для экспорта
-            headers = ["ID", "Название", "Клиент", "Дедлайн", "Бюджет", "Статус"]
-            data = []
+        headers = ["ID", "Название", "Клиент", "Дедлайн", "Бюджет", "Статус"]
+        data = []
+        for row in range(self.projects_table.rowCount()):
+            if not self.projects_table.isRowHidden(row):
+                data.append([self.projects_table.item(row, col).text() for col in range(self.projects_table.columnCount())])
 
-            for row in range(self.projects_table.rowCount()):
-                if not self.projects_table.isRowHidden(row):
-                    row_data = []
-                    for col in range(self.projects_table.columnCount()):
-                        row_data.append(self.projects_table.item(row, col).text())
-                    data.append(row_data)
-
-            # Экспорт в CSV
-            result = self.export_controller.export_data_to_csv(data, headers, file_path)
-
-            if result['success']:
-                QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
-            else:
-                QMessageBox.critical(self, "Ошибка", result['error_message'])
+        result = self.export_controller.export_data_to_csv(data, headers, file_path)
+        if result['success']:
+            QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
+        else:
+            QMessageBox.critical(self, "Ошибка", result['error_message'])
 
     def export_to_excel(self):
-        """
-        Экспорт данных в Excel
-        """
-        # Открытие диалога сохранения файла
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Сохранить Excel", "", "Excel Files (*.xlsx);;All Files (*)"
         )
+        if not file_path:
+            return
 
-        if file_path:
-            # Подготовка данных для экспорта
-            headers = ["ID", "Название", "Клиент", "Дедлайн", "Бюджет", "Статус"]
-            data = []
+        headers = ["ID", "Название", "Клиент", "Дедлайн", "Бюджет", "Статус"]
+        data = []
+        for row in range(self.projects_table.rowCount()):
+            if not self.projects_table.isRowHidden(row):
+                data.append([self.projects_table.item(row, col).text() for col in range(self.projects_table.columnCount())])
 
-            for row in range(self.projects_table.rowCount()):
-                if not self.projects_table.isRowHidden(row):
-                    row_data = []
-                    for col in range(self.projects_table.columnCount()):
-                        row_data.append(self.projects_table.item(row, col).text())
-                    data.append(row_data)
-
-            # Экспорт в Excel
-            result = self.export_controller.export_data_to_excel(data, headers, file_path, "Проекты")
-
-            if result['success']:
-                QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
-            else:
-                QMessageBox.critical(self, "Ошибка", result['error_message'])
-                QMessageBox.critical(self, "Ошибка", result['error_message'])
+        result = self.export_controller.export_data_to_excel(data, headers, file_path, "Проекты")
+        if result['success']:
+            QMessageBox.information(self, "Успех", f"Данные успешно экспортированы в {file_path}")
+        else:
+            QMessageBox.critical(self, "Ошибка", result['error_message'])
