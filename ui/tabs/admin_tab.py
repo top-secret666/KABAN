@@ -8,6 +8,7 @@ from PyQt5.QtCore import Qt
 from controllers.auth_controller import AuthController
 from ui.widgets.tab_page import TabPage
 from ui.resources.icon_helper import get_icon
+from ui.resources.table_helper import configure_table
 from ui.dialogs.base_dialog import BaseDialog
 
 
@@ -134,11 +135,9 @@ class AdminTab(QWidget):
         layout = page.content_layout
 
         self.users_table = QTableWidget()
+        configure_table(self.users_table)
         self.users_table.setColumnCount(6)
         self.users_table.setHorizontalHeaderLabels(["ID", "Имя пользователя", "Email", "Полное имя", "Роль", "Активен"])
-        self.users_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.users_table.setSelectionMode(QTableWidget.SingleSelection)
-        self.users_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.users_table.horizontalHeader().setStretchLastSection(True)
 
         layout.addWidget(self.users_table)
