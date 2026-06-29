@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="kaban.sqlite" uuid="c40f34e3-625f-48de-b91b-af31e7575038">
+    <data-source source="LOCAL" name="kaban.bd" uuid="c2d8115a-88a8-4b9c-86b1-a2d1dee3403e">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/database/kabanmanagement_it-projects.sqlite</jdbc-url>
+      <jdbc-url>jdbc:sqlite:D:\;R\versions_6\database\kaban.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

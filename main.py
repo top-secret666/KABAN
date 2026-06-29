@@ -1,16 +1,49 @@
-# This is a sample Python script.
+import os
+import sys
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtCore import QTimer
+
+from paths import ROOT_DIR, resource_path
+from database.bootstrap import ensure_database
+from notification_scheduler import NotificationScheduler
+from ui import LoginWindow, MainWindow, SplashScreen
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def main():
+    os.chdir(ROOT_DIR)
+
+    app = QApplication(sys.argv)
+    app.setStyle('Fusion')
+    app.setApplicationName('KABAN:manager')
+    app.setWindowIcon(QIcon(resource_path('ui', 'resources', 'icons', 'logo.png')))
+    app.setFont(QFont('Segoe UI', 10))
+
+    from ui.resources.theme_manager import apply_theme
+    apply_theme(app)
+
+    ensure_database()
+
+    notification_scheduler = NotificationScheduler()
+    notification_scheduler.run_checks()
+
+    splash = SplashScreen()
+    splash.show()
+    splash.start_progress()
+
+    def show_login():
+        splash.close()
+        login_window = LoginWindow()
+        if login_window.exec_():
+            app.main_window = MainWindow(login_window.user)
+            app.main_window.show()
+        else:
+            sys.exit(0)
+
+    QTimer.singleShot(2500, show_login)
+    sys.exit(app.exec_())
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()

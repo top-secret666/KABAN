@@ -39,7 +39,7 @@ def test_connection(db_path='database/kabanmanagement_it-projects.sqlite'):
         for table in tables:
             print(f"- {table[0]}")
 
-        for table_name in ['developers', 'projects', 'tasks']:
+        for table_name in ['developers', 'projects', 'tasks', 'users', 'notifications', 'sessions']:
             cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
             count = cursor.fetchone()[0]
             print(f"Количество записей в таблице {table_name}: {count}")

@@ -1,0 +1,72 @@
+/* Modern Kanban QSS Theme */
+
+QWidget {
+    background: #f4f6fb;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    color: #222;
+}
+
+QLabel#KanbanTitle {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2d3a4a;
+    letter-spacing: 1px;
+}
+
+QPushButton {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #6a82fb, stop:1 #fc5c7d);
+    color: white;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    transition: background 0.2s;
+}
+QPushButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #fc5c7d, stop:1 #6a82fb);
+}
+
+QFrame#KanbanColumn {
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(44,62,80,0.08);
+    padding: 18px 12px;
+    margin: 0 8px;
+}
+
+QWidget#KanbanCard {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(44,62,80,0.10);
+    margin-bottom: 14px;
+    padding: 14px 12px;
+    border: 2px solid #e3e7ed;
+    transition: border 0.2s;
+}
+QWidget#KanbanCard:hover {
+    border: 2px solid #6a82fb;
+}
+
+QScrollArea {
+    border: none;
+    background: transparent;
+}
+
+QTabWidget::pane {
+    border: none;
+    background: transparent;
+}
+
+QTabBar::tab {
+    background: #e3e7ed;
+    border-radius: 10px 10px 0 0;
+    padding: 10px 24px;
+    font-size: 16px;
+    color: #2d3a4a;
+    margin-right: 2px;
+}
+QTabBar::tab:selected {
+    background: #fff;
+    color: #6a82fb;
+}

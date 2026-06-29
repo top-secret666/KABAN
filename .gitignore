@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.idea/
+*.db-journal
+app_log.txt
+*.xlsx
+*.csv
+!docs/
+kaban.db
+database/kaban.db

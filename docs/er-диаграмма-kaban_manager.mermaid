@@ -1,0 +1,71 @@
+erDiagram
+    USERS ||--o{ DEVELOPERS : "связан с"
+    USERS ||--o{ PROJECTS : "создает"
+    USERS ||--o{ TASKS : "создает"
+    USERS ||--o{ SESSIONS : "имеет"
+    USERS ||--o{ NOTIFICATIONS : "получает"
+    DEVELOPERS ||--o{ TASKS : "выполняет (1-M)"
+    PROJECTS ||--o{ TASKS : "содержит (1-M)"
+    
+    USERS {
+        int id PK "Первичный ключ"
+        string username "Имя пользователя (логин)"
+        string password "Хешированный пароль"
+        string email "Email пользователя"
+        string full_name "Полное имя"
+        string role "Роль (admin, manager, developer)"
+        boolean is_active "Активен ли пользователь"
+        datetime last_login "Время последнего входа"
+        datetime created_at "Время создания"
+    }
+    
+    SESSIONS {
+        int id PK "Первичный ключ"
+        int user_id FK "Внешний ключ к пользователю"
+        string session_token "Токен сессии"
+        datetime created_at "Время создания"
+        datetime expires_at "Время истечения"
+    }
+    
+    DEVELOPERS {
+        int id PK "Первичный ключ"
+        string full_name "ФИО разработчика"
+        string position "Должность (backend, frontend, QA)"
+        float hourly_rate "Ставка в час"
+        int user_id FK "Внешний ключ к пользователю"
+    }
+    
+    PROJECTS {
+        int id PK "Первичный ключ"
+        string name "Название проекта"
+        string client "Клиент"
+        date deadline "Срок сдачи"
+        float budget "Бюджет"
+        string status "Статус проекта"
+        datetime created_at "Время создания"
+        int created_by FK "Внешний ключ к создателю"
+    }
+    
+    TASKS {
+        int id PK "Первичный ключ"
+        int project_id FK "Внешний ключ к проекту"
+        int developer_id FK "Внешний ключ к разработчику"
+        string description "Описание задачи"
+        string status "Статус (новая/в работе/на проверке/завершено)"
+        float hours_worked "Часы работы"
+        datetime created_at "Время создания"
+        datetime updated_at "Время обновления"
+        int created_by FK "Внешний ключ к создателю"
+    }
+    
+    NOTIFICATIONS {
+        int id PK "Первичный ключ"
+        string title "Заголовок уведомления"
+        string message "Текст уведомления"
+        string type "Тип (info, warning, error)"
+        int related_id "ID связанного объекта"
+        string related_type "Тип связанного объекта"
+        boolean is_read "Прочитано ли"
+        datetime created_at "Время создания"
+        int user_id FK "Внешний ключ к пользователю"
+    }
