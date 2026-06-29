@@ -381,10 +381,7 @@ class SettingsTab(QWidget):
             self.accent_color_button.setStyleSheet(
                 f"background-color: {color.name()}; border: 1px solid #888; border-radius: 4px;"
             )
-
-            self.accent_color_button.setStyleSheet(
-                f"background-color: {color.name()}; border: 1px solid #888; border-radius: 4px;"
-            )
+            self._preview_theme()
 
     def choose_bg_color(self):
         color = QColorDialog.getColor(self.bg_color, self, "Цвет фона рабочей области")
@@ -411,6 +408,7 @@ class SettingsTab(QWidget):
         app = QApplication.instance()
         if app:
             apply_theme(app, config)
+            self._refresh_main_window()
 
         QMessageBox.information(self, "Успех", "Настройки интерфейса применены.")
 

@@ -3,8 +3,9 @@
 from PyQt5.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QWidget,
 )
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGraphicsDropShadowEffect
 
 from ui.resources.theme_manager import get_stylesheet
 
@@ -27,6 +28,11 @@ class BaseDialog(QDialog):
         self.setMinimumWidth(500)
         self._build_chrome(title)
         self._apply_style()
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(28)
+        shadow.setOffset(0, 6)
+        shadow.setColor(QColor(0, 0, 0, 55))
+        self.setGraphicsEffect(shadow)
 
     def _apply_style(self):
         self.setStyleSheet(get_stylesheet())
