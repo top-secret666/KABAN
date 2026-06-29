@@ -280,15 +280,15 @@ END;
 -- Добавление администратора по умолчанию (пароль: admin)
 INSERT OR IGNORE INTO users (username, password, email, full_name, role, is_active)
 VALUES
-('admin', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'admin@example.com', 'Администратор', 'admin', 1),
+('admin', '$kaban_admin_v1$5339711063c99e0091dd0d254336e5373e1c2bdd0235f814696d45eeebab7e86', 'admin@example.com', 'Администратор', 'admin', 1),
 ('1', '$1a616f9728e5150875b99126c4557f91$8cbffdff5e89238d471e04779aee58b587340a9601303259cb4e77e3dd117d44', '1@.com', '1', 'admin', 1);
 
 -- Добавление тестовых пользователей
 INSERT OR IGNORE INTO users (username, password, email, full_name, role, is_active)
 VALUES 
-('manager', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$5f4dcc3b5aa765d61d8327deb882cf99', 'manager@example.com', 'Менеджер Проектов', 'manager', 1),
-('developer1', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$5f4dcc3b5aa765d61d8327deb882cf99', 'dev1@example.com', 'Иванов Иван Иванович', 'developer', 1),
-('developer2', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$5f4dcc3b5aa765d61d8327deb882cf99', 'dev2@example.com', 'Петров Петр Петрович', 'developer', 1);
+('manager', '$kaban_seed_v1$400545263b410d2c2ed80568563ef583e1120b04e6bc94e0b6f51484b5e2afb0', 'manager@example.com', 'Менеджер Проектов', 'manager', 1),
+('developer1', '$kaban_seed_v1$400545263b410d2c2ed80568563ef583e1120b04e6bc94e0b6f51484b5e2afb0', 'dev1@example.com', 'Иванов Иван Иванович', 'developer', 1),
+('developer2', '$kaban_seed_v1$400545263b410d2c2ed80568563ef583e1120b04e6bc94e0b6f51484b5e2afb0', 'dev2@example.com', 'Петров Петр Петрович', 'developer', 1);
 
 -- Добавление разработчиков
 INSERT OR IGNORE INTO developers (full_name, position, hourly_rate, user_id)
