@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QFormLayout, QMessageBox, QDateEdit,
-                             QLineEdit, QPushButton)
+from PyQt5.QtWidgets import QFormLayout, QMessageBox, QDateEdit, QLineEdit, QPushButton
 from PyQt5.QtCore import QDate
 
 from controllers import ProjectController
@@ -7,24 +6,17 @@ from ui.dialogs.base_dialog import BaseDialog
 
 
 class NewProjectDialog(BaseDialog):
-    """Диалог добавления/редактирования проекта."""
-
     def __init__(self, parent=None, project=None):
         self.project = project
         self.project_controller = ProjectController()
         title = 'Редактирование проекта' if project else 'Новый проект'
         super().__init__(parent, title)
-        self.setMinimumHeight(360)
+        self.setMinimumHeight(400)
         self._build()
 
     def _build(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 20, 24, 20)
-        layout.setSpacing(16)
-
         form = QFormLayout()
         form.setSpacing(12)
-
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText('Название проекта')
         self.client_input = QLineEdit()
@@ -34,23 +26,21 @@ class NewProjectDialog(BaseDialog):
         self.deadline_input.setDate(QDate.currentDate().addMonths(1))
         self.budget_input = QLineEdit()
         self.budget_input.setPlaceholderText('Бюджет')
-
         form.addRow('Название *', self.name_input)
         form.addRow('Клиент *', self.client_input)
         form.addRow('Дедлайн *', self.deadline_input)
         form.addRow('Бюджет *', self.budget_input)
-        layout.addLayout(form)
+        self.body_layout.addLayout(form)
 
-        buttons = QHBoxLayout()
-        buttons.addStretch()
         save_btn = QPushButton('Сохранить')
+        save_btn.setMinimumWidth(120)
         save_btn.clicked.connect(self.validate_and_accept)
         cancel_btn = QPushButton('Отмена')
         cancel_btn.setObjectName('flat')
+        cancel_btn.setMinimumWidth(100)
         cancel_btn.clicked.connect(self.reject)
-        buttons.addWidget(save_btn)
-        buttons.addWidget(cancel_btn)
-        layout.addLayout(buttons)
+        self.add_footer_button(cancel_btn)
+        self.add_footer_button(save_btn)
 
         if self.project:
             self.name_input.setText(self.project.name)
