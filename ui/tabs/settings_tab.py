@@ -341,6 +341,7 @@ class SettingsTab(QWidget):
                 self.bg_color_button.setStyleSheet(
                     f"background-color: {color}; border: 1px solid #888; border-radius: 4px;"
                 )
+        self._preview_theme()
 
     def _build_theme_config(self):
         preset = self.bg_preset_combo.currentData()
@@ -357,11 +358,17 @@ class SettingsTab(QWidget):
             'font_size': self.font_size_spin.value(),
         }
 
+    def _refresh_main_window(self):
+        win = self.window()
+        if win and hasattr(win, 'apply_theme'):
+            win.apply_theme()
+
     def _preview_theme(self):
         from PyQt5.QtWidgets import QApplication
         app = QApplication.instance()
         if app:
             apply_theme(app, self._build_theme_config())
+            self._refresh_main_window()
 
     def choose_accent_color(self):
         """

@@ -244,12 +244,14 @@ class DashboardTab(QWidget):
         header = QFrame()
         header.setStyleSheet(f"background-color: {BG_CARD}; border-bottom: 1px solid {BORDER};")
         header.setFixedHeight(64)
+        self._header = header
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(24, 0, 24, 0)
 
         greeting = QLabel(f"👋 {self.user.full_name}")
         greeting.setFont(QFont('Segoe UI', 16, QFont.DemiBold))
         greeting.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none;")
+        self._greeting = greeting
         header_layout.addWidget(greeting)
 
         header_layout.addStretch()
@@ -267,9 +269,11 @@ class DashboardTab(QWidget):
         scroll_area.setWidgetResizable(True)
         scroll_area.setFrameShape(QFrame.NoFrame)
         scroll_area.setStyleSheet(f"QScrollArea {{ background-color: {BG_MAIN}; border: none; }}")
+        self._scroll_area = scroll_area
 
         content = QWidget()
         content.setStyleSheet(f"background-color: {BG_MAIN};")
+        self._content = content
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(24, 20, 24, 20)
         content_layout.setSpacing(20)
@@ -280,6 +284,7 @@ class DashboardTab(QWidget):
         board_title = QLabel("📋  Kanban-доска")
         board_title.setFont(QFont('Segoe UI', 15, QFont.DemiBold))
         board_title.setStyleSheet(f"color: {TEXT_PRIMARY};")
+        self._board_title = board_title
         board_header.addWidget(board_title)
         board_header.addStretch()
         content_layout.addLayout(board_header)
@@ -338,6 +343,23 @@ class DashboardTab(QWidget):
         window = self.window()
         if hasattr(window, '_switch_to_key'):
             window._switch_to_key('tasks')
+
+    def refresh_theme(self):
+        from ui.resources import styles as s
+        if hasattr(self, '_header'):
+            self._header.setStyleSheet(
+                f"background-color: {s.BG_CARD}; border-bottom: 1px solid {s.BORDER};"
+            )
+        if hasattr(self, '_greeting'):
+            self._greeting.setStyleSheet(f"color: {s.TEXT_PRIMARY}; border: none;")
+        if hasattr(self, '_scroll_area'):
+            self._scroll_area.setStyleSheet(
+                f"QScrollArea {{ background-color: {s.BG_MAIN}; border: none; }}"
+            )
+        if hasattr(self, '_content'):
+            self._content.setStyleSheet(f"background-color: {s.BG_MAIN};")
+        if hasattr(self, '_board_title'):
+            self._board_title.setStyleSheet(f"color: {s.TEXT_PRIMARY};")
 
     def refresh_data(self):
         try:

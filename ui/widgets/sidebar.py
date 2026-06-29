@@ -79,6 +79,9 @@ class Sidebar(QFrame):
         subtitle.setFont(QFont('Segoe UI', 9))
         subtitle.setStyleSheet(f'color: {SIDEBAR_TEXT_DIM}; background: transparent; border: none;')
 
+        self._logo_title = title
+        self._logo_subtitle = subtitle
+
         logo_layout.addWidget(title)
         logo_layout.addWidget(subtitle)
         layout.addWidget(logo_frame)
@@ -116,6 +119,9 @@ class Sidebar(QFrame):
         role_lbl.setFont(QFont('Segoe UI', 9))
         role_lbl.setStyleSheet(f'color: {SIDEBAR_TEXT_DIM}; background: transparent; border: none;')
 
+        self._user_name = name_lbl
+        self._user_role = role_lbl
+
         user_layout.addWidget(name_lbl)
         user_layout.addWidget(role_lbl)
         layout.addWidget(user_frame)
@@ -135,14 +141,13 @@ class Sidebar(QFrame):
 
     def refresh_theme(self):
         from ui.resources.styles import TEXT_WHITE, SIDEBAR_TEXT_DIM
-        for lbl in self.findChildren(QLabel):
-            style = lbl.styleSheet() or ''
-            if 'SIDEBAR_TEXT_DIM' in style or lbl.font().pointSize() == 9:
-                if lbl.text() in ('manager', 'Администратор', 'Менеджер', 'Разработчик'):
-                    lbl.setStyleSheet(
-                        f'color: {SIDEBAR_TEXT_DIM}; background: transparent; border: none;'
-                    )
-            elif lbl.font().bold() and lbl.text() in ('KABAN', self.user.full_name):
+        for lbl, color in (
+            (getattr(self, '_logo_title', None), TEXT_WHITE),
+            (getattr(self, '_user_name', None), TEXT_WHITE),
+            (getattr(self, '_logo_subtitle', None), SIDEBAR_TEXT_DIM),
+            (getattr(self, '_user_role', None), SIDEBAR_TEXT_DIM),
+        ):
+            if lbl:
                 lbl.setStyleSheet(
-                    f'color: {TEXT_WHITE}; background: transparent; border: none;'
+                    f'color: {color}; background: transparent; border: none;'
                 )
