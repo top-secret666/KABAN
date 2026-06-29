@@ -6,10 +6,7 @@ from PyQt5.QtWidgets import (QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayou
 from PyQt5.QtGui import QPixmap, QIcon, QFont, QColor
 from PyQt5.QtCore import Qt, QSize
 
-from ui.resources.styles import (
-    GLOBAL_STYLE, PRIMARY_COLOR, PRIMARY_DARK, PRIMARY_LIGHT,
-    TEXT_PRIMARY, TEXT_SECONDARY, BG_MAIN, BG_CARD, BORDER
-)
+from ui.resources.theme_manager import get_login_styles, get_config
 from controllers import AuthController
 
 
@@ -29,10 +26,11 @@ class LoginWindow(QDialog):
             Qt.Dialog | Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint
         )
 
+        ls = get_login_styles(get_config())
+
         self.setStyleSheet(f"""
             QDialog {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 {PRIMARY_COLOR}, stop:0.5 #4AD4F5, stop:1 {PRIMARY_DARK});
+                background: {ls['gradient']};
             }}
         """)
 
@@ -44,7 +42,7 @@ class LoginWindow(QDialog):
         card = QFrame()
         card.setStyleSheet(f"""
             QFrame {{
-                background-color: {BG_CARD};
+                background-color: {ls['card_bg']};
                 border-radius: 16px;
                 border: none;
             }}
@@ -72,13 +70,13 @@ class LoginWindow(QDialog):
         title = QLabel('KABAN:manager')
         title.setFont(QFont('Segoe UI', 20, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none; background: transparent;")
+        title.setStyleSheet(f"color: {ls['text_primary']}; border: none; background: transparent;")
         card_layout.addWidget(title)
 
         subtitle = QLabel('Войдите в свой аккаунт')
         subtitle.setFont(QFont('Segoe UI', 11))
         subtitle.setAlignment(Qt.AlignCenter)
-        subtitle.setStyleSheet(f"color: {TEXT_SECONDARY}; border: none; margin-bottom: 8px; background: transparent;")
+        subtitle.setStyleSheet(f"color: {ls['text_secondary']}; border: none; margin-bottom: 8px; background: transparent;")
         card_layout.addWidget(subtitle)
 
         # Поля ввода
