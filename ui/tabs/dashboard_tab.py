@@ -37,7 +37,7 @@ class KanbanCard(QFrame):
 
         # Верхняя строка: проект
         project_name = getattr(task, 'project_name', 'Проект')
-        project_lbl = QLabel(f"📁 {project_name}")
+        project_lbl = QLabel(project_name)
         project_lbl.setObjectName("card_project")
         layout.addWidget(project_lbl)
 
@@ -53,14 +53,14 @@ class KanbanCard(QFrame):
         bottom.setSpacing(8)
 
         dev_name = getattr(task, 'developer_name', 'Не назначен')
-        dev_lbl = QLabel(f"👤 {dev_name}")
+        dev_lbl = QLabel(dev_name)
         dev_lbl.setObjectName("card_developer")
         bottom.addWidget(dev_lbl)
 
         bottom.addStretch()
 
         hours = getattr(task, 'hours_worked', 0) or 0
-        hours_lbl = QLabel(f"⏱ {hours}ч")
+        hours_lbl = QLabel(f"{hours} ч")
         hours_lbl.setObjectName("card_hours")
         bottom.addWidget(hours_lbl)
 

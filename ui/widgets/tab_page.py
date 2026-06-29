@@ -34,8 +34,8 @@ class TabPage(QWidget):
             self.content_layout = QVBoxLayout(self.body)
             root.addWidget(self.body, stretch=1)
 
-        self.content_layout.setContentsMargins(24, 20, 24, 20)
-        self.content_layout.setSpacing(16)
+        self.content_layout.setContentsMargins(32, 8, 32, 28)
+        self.content_layout.setSpacing(20)
 
     def add_action(self, widget):
         self.header.add_action(widget)

@@ -57,8 +57,8 @@ class MainWindow(QMainWindow):
 
         self._build_pages()
         self.create_menu()
-        self.create_toolbar()
         self.create_statusbar()
+        self.menuBar().setVisible(False)
         self.showMaximized()
 
     def _build_pages(self):
@@ -213,15 +213,7 @@ class MainWindow(QMainWindow):
     def create_statusbar(self):
         self.statusbar = QStatusBar()
         self.setStatusBar(self.statusbar)
-
-        user_label = QLabel(f"  {self.user.full_name}  ·  {self.user.role}  ")
-        user_label.setFont(QFont('Segoe UI', 10))
-        self.statusbar.addPermanentWidget(user_label)
-
-        version_label = QLabel("  v1.0.0  ")
-        version_label.setFont(QFont('Segoe UI', 10))
-        self.statusbar.addPermanentWidget(version_label)
-        self.statusbar.showMessage(f'Добро пожаловать, {self.user.full_name}!', 5000)
+        self.statusbar.showMessage(f'Добро пожаловать, {self.user.full_name}', 5000)
 
     def add_item(self):
         current_tab = self._current_tab()

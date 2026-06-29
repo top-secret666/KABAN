@@ -109,6 +109,7 @@ def build_palette(config=None):
             'sidebar_text_dim': '#8b939e',
             'sidebar_border': '#0d0f13',
             'sidebar_active_bg': _accent_tint(accent, 0.18),
+            'table_hover': '#252a33',
         }
         status_new_bg = '#1a2a32'
         status_progress_bg = '#2a2418'
@@ -177,7 +178,11 @@ def get_stylesheet(config=None):
 def get_login_styles(config=None):
     p = build_palette(config)
     return {
-        'gradient': f'qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 {p["primary"]}, stop:0.5 {_lighten(p["primary"], 0.3)}, stop:1 {p["primary_dark"]})',
+        'gradient': (
+            f'qlineargradient(x1:0, y1:0, x2:0, y2:1, '
+            f'stop:0 {p["bg_main"]}, stop:0.35 {_lighten(p["primary"], 0.55)}, '
+            f'stop:1 {_lighten(p["primary"], 0.35)})'
+        ),
         'card_bg': p['bg_card'],
         'text_primary': p['text_primary'],
         'text_secondary': p['text_secondary'],

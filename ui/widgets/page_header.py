@@ -11,17 +11,17 @@ class PageHeader(QFrame):
     def __init__(self, title, subtitle='', parent=None):
         super().__init__(parent)
         self.setObjectName('page_header')
-        self.setFixedHeight(64 if not subtitle else 72)
+        self.setFixedHeight(80 if not subtitle else 88)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(24, 0, 24, 0)
+        layout.setContentsMargins(32, 16, 32, 16)
 
         text_col = QVBoxLayout()
         text_col.setSpacing(2)
 
         title_lbl = QLabel(title)
         title_lbl.setObjectName('page_title')
-        title_lbl.setFont(QFont('Segoe UI', 18, QFont.DemiBold))
+        title_lbl.setFont(QFont('Segoe UI', 22, QFont.Bold))
         text_col.addWidget(title_lbl)
 
         if subtitle:
@@ -48,7 +48,7 @@ class FilterPanel(QFrame):
         super().__init__(parent)
         self.setObjectName('filter_panel')
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(16, 12, 16, 12)
+        self._layout.setContentsMargins(20, 16, 20, 16)
         self._layout.setSpacing(12)
 
     def add_widget(self, widget):
