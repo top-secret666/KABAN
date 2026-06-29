@@ -44,7 +44,7 @@ def main():
 
     QTimer.singleShot(2500, show_login)
     sys.exit(app.exec_())
-
+ 
 
 if __name__ == '__main__':
     main()
