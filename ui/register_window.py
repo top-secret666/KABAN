@@ -3,10 +3,7 @@ from PyQt5.QtWidgets import (QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayou
 from PyQt5.QtGui import QPixmap, QIcon, QFont, QColor
 from PyQt5.QtCore import Qt
 
-from ui.resources.styles import (
-    PRIMARY_COLOR, PRIMARY_DARK, PRIMARY_LIGHT,
-    TEXT_PRIMARY, TEXT_SECONDARY, BG_CARD, BORDER,
-)
+from ui.resources.theme_manager import get_login_styles, get_config, current_palette
 from controllers import AuthController
 
 
@@ -24,20 +21,18 @@ class RegisterWindow(QDialog):
         self.setWindowTitle('KABAN:manager — Регистрация')
         self.setWindowIcon(QIcon('ui/resources/icons/logo.png'))
         self.setFixedSize(480, 620)
-        self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
+        self.setWindowFlags(Qt.Dialog | Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
 
-        self.setStyleSheet(f"""
-            QDialog {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 {PRIMARY_COLOR}, stop:0.5 #4AD4F5, stop:1 {PRIMARY_DARK});
-            }}
-        """)
+        ls = get_login_styles(get_config())
+        p = current_palette()
+
+        self.setStyleSheet(f"QDialog {{ background: {ls['gradient']}; }}")
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(32, 32, 32, 32)
 
         card = QFrame()
-        card.setStyleSheet(f"QFrame {{ background-color: {BG_CARD}; border-radius: 12px; border: none; }}")
+        card.setStyleSheet(f"QFrame {{ background-color: {ls['card_bg']}; border-radius: 12px; border: none; }}")
         shadow = QGraphicsDropShadowEffect(card)
         shadow.setBlurRadius(40)
         shadow.setOffset(0, 8)
