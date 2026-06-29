@@ -220,7 +220,14 @@ class User:
                 salt = parts[1]
                 stored_hash = parts[2]
                 computed_hash = hashlib.sha256((password + salt).encode()).hexdigest()
-                return computed_hash == stored_hash
+                if computed_hash == stored_hash:
+                    return True
+                # Legacy seed: хеш = sha256(password) без соли в формате $salt$hash
+                legacy_hash = hashlib.sha256(password.encode()).hexdigest()
+                if legacy_hash == stored_hash:
+                    self.password = self._hash_password(password)
+                    self.save()
+                    return True
 
         # Проверка для простого SHA-256 хеша без соли
         simple_hash = hashlib.sha256(password.encode()).hexdigest()
