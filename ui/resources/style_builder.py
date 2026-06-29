@@ -166,36 +166,90 @@ QTextBrowser {{
 def _buttons(p):
     return f"""
 QPushButton {{
-    background-color: {p['primary']}; color: {p['text_on_primary']};
-    border: none; border-radius: 8px; padding: 9px 22px;
-    font-size: 13px; font-weight: 600; font-family: {FONT_FAMILY}; min-height: 18px;
+    background-color: {p['primary']};
+    color: {p['text_on_primary']};
+    border: 1px solid {p['primary_dark']};
+    border-radius: 8px;
+    padding: 9px 22px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: {FONT_FAMILY};
+    min-height: 18px;
 }}
-QPushButton:hover {{ background-color: {p['primary_dark']}; }}
-QPushButton:pressed {{ background-color: {p['primary_pressed']}; }}
-QPushButton:disabled {{ background-color: {p['border']}; color: {p['text_secondary']}; }}
-QPushButton#primary {{
-    background-color: {p['primary']}; color: {p['text_on_primary']};
-    padding: 9px 20px; border-radius: 8px; font-weight: 600;
+QPushButton:hover {{
+    background-color: {p['primary_dark']};
+    border-color: {p['primary_pressed']};
 }}
-QPushButton#primary:hover {{ background-color: {p['primary_dark']}; }}
-QPushButton#success {{ background-color: {p['success']}; color: {p['text_primary']}; }}
-QPushButton#warning {{ background-color: {p['warning']}; color: {p['text_primary']}; }}
-QPushButton#error {{ background-color: {p['error']}; color: white; }}
+QPushButton:pressed {{
+    background-color: {p['primary_pressed']};
+    border-color: {p['primary_pressed']};
+}}
+QPushButton:disabled {{
+    background-color: {p['border']};
+    color: {p['text_secondary']};
+    border-color: {p['border']};
+}}
+QPushButton#btn_primary {{
+    background-color: {p['primary']};
+    color: {p['text_on_primary']};
+    border: 1px solid {p['primary_dark']};
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    min-width: 120px;
+}}
+QPushButton#btn_primary:hover {{
+    background-color: {p['primary_dark']};
+    border-color: {p['primary_pressed']};
+}}
+QPushButton#success {{
+    background-color: {p['success']};
+    color: {p['text_primary']};
+    border: 1px solid {p['success']};
+}}
+QPushButton#warning {{
+    background-color: {p['warning']};
+    color: {p['text_primary']};
+    border: 1px solid {p['warning']};
+}}
+QPushButton#error {{
+    background-color: {p['error']};
+    color: white;
+    border: 1px solid {p['error']};
+}}
 QPushButton#flat {{
-    background: transparent; color: {p['primary']};
-    border: 1px solid {p['primary']}; font-weight: 500;
+    background-color: transparent;
+    color: {p['primary']};
+    border: 1px solid {p['primary']};
+    font-weight: 500;
 }}
-QPushButton#flat:hover {{ background-color: {p['primary_light']}; }}
+QPushButton#flat:hover {{
+    background-color: {p['primary_light']};
+    color: {p['primary_dark']};
+}}
 QPushButton#ghost {{
-    background: transparent; color: {p['text_secondary']}; border: none; font-weight: 500;
+    background-color: transparent;
+    color: {p['text_secondary']};
+    border: 1px solid transparent;
+    font-weight: 500;
 }}
-QPushButton#ghost:hover {{ color: {p['primary']}; background-color: {p['primary_light']}; }}
+QPushButton#ghost:hover {{
+    color: {p['primary']};
+    background-color: {p['primary_light']};
+    border-color: transparent;
+}}
 QPushButton#kanban_add {{
-    background: transparent; color: {p['text_secondary']};
-    border: 2px dashed {p['border']}; border-radius: 8px; padding: 12px;
+    background-color: transparent;
+    color: {p['text_secondary']};
+    border: 2px dashed {p['border']};
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 500;
 }}
 QPushButton#kanban_add:hover {{
-    border-color: {p['primary']}; color: {p['primary']}; background-color: {p['primary_light']};
+    border-color: {p['primary']};
+    color: {p['primary']};
+    background-color: {p['primary_light']};
 }}
 """
 

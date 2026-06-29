@@ -300,12 +300,14 @@ class DashboardTab(QWidget):
         board_header.addWidget(board_title)
         board_header.addStretch()
 
-        add_task_btn = QPushButton("＋  Новая задача")
-        add_task_btn.setObjectName("primary")
+        add_task_btn = QPushButton("  Новая задача")
+        add_task_btn.setObjectName("btn_primary")
         add_task_btn.setFixedHeight(36)
+        add_task_btn.setMinimumWidth(140)
         add_task_btn.setCursor(Qt.PointingHandCursor)
         add_task_btn.setIcon(get_icon('add'))
         add_task_btn.clicked.connect(lambda: self.add_task('новая'))
+        self._add_task_btn = add_task_btn
         board_header.addWidget(add_task_btn)
         self._content_layout.addLayout(board_header)
 

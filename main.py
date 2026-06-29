@@ -15,6 +15,7 @@ def main():
     """
     # Создание приложения
     app = QApplication(sys.argv)
+    app.setStyle('Fusion')
     app.setApplicationName('KABAN:manager')
     app.setWindowIcon(QIcon('ui/resources/icons/logo.png'))
     app.setFont(QFont('Segoe UI', 10))
