@@ -107,25 +107,51 @@ class SettingsTab(QWidget):
 
         self.theme_combo = QComboBox()
         self.theme_combo.addItem("Светлая", "light")
-        self.theme_combo.addItem("Темная", "dark")
-
-        # Установка текущей темы
+        self.theme_combo.addItem("Тёмная", "dark")
         current_theme = self.settings.value("theme", "light")
         index = self.theme_combo.findData(current_theme)
         if index >= 0:
             self.theme_combo.setCurrentIndex(index)
+        self.theme_combo.currentIndexChanged.connect(self._preview_theme)
+
+        self.bg_preset_combo = QComboBox()
+        self.bg_preset_combo.addItem("По умолчанию", "default")
+        self.bg_preset_combo.addItem("Серый", "gray")
+        self.bg_preset_combo.addItem("Голубой", "blue")
+        self.bg_preset_combo.addItem("Мятный", "mint")
+        self.bg_preset_combo.addItem("Тёплый", "warm")
+        self.bg_preset_combo.addItem("Тёмно-серый", "dark_gray")
+        self.bg_preset_combo.addItem("Тёмно-синий", "dark_blue")
+        self.bg_preset_combo.addItem("Свой цвет…", "custom")
+        preset = self.settings.value("bg_preset", "default")
+        pi = self.bg_preset_combo.findData(preset)
+        if pi >= 0:
+            self.bg_preset_combo.setCurrentIndex(pi)
+        self.bg_preset_combo.currentIndexChanged.connect(self._on_bg_preset_changed)
 
         self.font_size_spin = QSpinBox()
         self.font_size_spin.setRange(8, 16)
-        self.font_size_spin.setValue(int(self.settings.value("font_size", 12)))
+        self.font_size_spin.setValue(int(self.settings.value("font_size", 10)))
 
         self.accent_color_button = QPushButton()
-        self.accent_color_button.setFixedSize(30, 30)
-        self.accent_color = QColor(self.settings.value("accent_color", "#1976D2"))
-        self.accent_color_button.setStyleSheet(f"background-color: {self.accent_color.name()};")
+        self.accent_color_button.setFixedSize(36, 28)
+        self.accent_color = QColor(self.settings.value("accent_color", "#2FC6F6"))
+        self.accent_color_button.setStyleSheet(
+            f"background-color: {self.accent_color.name()}; border: 1px solid #888; border-radius: 4px;"
+        )
         self.accent_color_button.clicked.connect(self.choose_accent_color)
 
+        self.bg_color_button = QPushButton()
+        self.bg_color_button.setFixedSize(36, 28)
+        self.bg_color = QColor(self.settings.value("bg_color", "#EDEEF0"))
+        self.bg_color_button.setStyleSheet(
+            f"background-color: {self.bg_color.name()}; border: 1px solid #888; border-radius: 4px;"
+        )
+        self.bg_color_button.clicked.connect(self.choose_bg_color)
+
         interface_form.addRow("Тема:", self.theme_combo)
+        interface_form.addRow("Фон рабочей области:", self.bg_preset_combo)
+        interface_form.addRow("Свой цвет фона:", self.bg_color_button)
         interface_form.addRow("Размер шрифта:", self.font_size_spin)
         interface_form.addRow("Цвет акцента:", self.accent_color_button)
 
@@ -152,15 +178,20 @@ class SettingsTab(QWidget):
         # Кнопки
         interface_buttons_layout = QHBoxLayout()
 
-        save_interface_button = QPushButton("Сохранить настройки")
+        save_interface_button = QPushButton("Применить")
         save_interface_button.setIcon(get_icon('save'))
         save_interface_button.clicked.connect(self.save_interface_settings)
 
-        reset_interface_button = QPushButton("Сбросить настройки")
+        preview_button = QPushButton("Предпросмотр")
+        preview_button.setObjectName('flat')
+        preview_button.clicked.connect(self._preview_theme)
+
+        reset_interface_button = QPushButton("Сбросить")
         reset_interface_button.setIcon(get_icon('refresh'))
         reset_interface_button.clicked.connect(self.reset_interface_settings)
 
         interface_buttons_layout.addWidget(save_interface_button)
+        interface_buttons_layout.addWidget(preview_button)
         interface_buttons_layout.addWidget(reset_interface_button)
 
         interface_layout.addLayout(interface_buttons_layout)
