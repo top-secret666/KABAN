@@ -19,9 +19,6 @@ def main():
     app.setWindowIcon(QIcon('ui/resources/icons/logo.png'))
     app.setFont(QFont('Segoe UI', 10))
 
-    from ui.resources.styles import GLOBAL_STYLE
-    app.setStyleSheet(GLOBAL_STYLE)
-
     # Инициализация базы данных
     db_manager = DBManager('database/kaban.db')
 
@@ -63,57 +60,6 @@ def main():
     # Вызов функции проверки
     check_notifications_table()
 
-    # Добавление тестовых данных для уведомлений
-    def add_test_data_for_notifications():
-        try:
-            from datetime import datetime, timedelta
-            from models.db_manager import DBManager
-
-            db_manager = DBManager('database/kaban.db')
-            db_manager.connect()
-
-            # Добавление проекта с просроченным дедлайном
-            yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
-            query = """
-                INSERT INTO projects (name, client, deadline, budget, status, created_by)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """
-            db_manager.conn.execute(query, (
-                'Тестовый просроченный проект',
-                'Тестовый клиент',
-                yesterday,
-                100000,
-                'в работе',
-                1  # ID администратора
-            ))
-
-            # Добавление задачи, которая не обновлялась долгое время
-            old_date = (datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d %H:%M:%S')
-            query = """
-                INSERT INTO tasks (project_id, developer_id, description, status, hours_worked, created_at, updated_at, created_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """
-            db_manager.conn.execute(query, (
-                1,  # ID проекта
-                1,  # ID разработчика
-                'Тестовая неактивная задача',
-                'в работе',
-                5,
-                old_date,
-                old_date,
-                1  # ID администратора
-            ))
-
-            db_manager.commit()
-            print("Тестовые данные для уведомлений добавлены")
-            return True
-        except Exception as e:
-            print(f"Ошибка при добавлении тестовых данных: {str(e)}")
-            return False
-
-    # Вызов функции добавления тестовых данных
-    add_test_data_for_notifications()
-
     # Загрузка SQL-скрипта
     if not os.path.exists('database/kaban.db') or os.path.getsize('database/kaban.db') == 0:
         with open('database/kaban.sql', 'r', encoding='utf-8') as sql_file:
@@ -124,31 +70,6 @@ def main():
     # Запуск проверок уведомлений
     notification_scheduler = NotificationScheduler()
     notification_scheduler.run_checks()
-
-    # Создание тестового уведомления
-    def create_test_notification():
-        try:
-            from services.notification_service import NotificationService
-
-            notification_service = NotificationService()
-            notification = notification_service.create_notification(
-                title="Тестовое уведомление",
-                message="Это тестовое уведомление для проверки работы системы.",
-                type="info"
-            )
-
-            if notification:
-                print(f"Тестовое уведомление успешно создано с ID: {notification.id}")
-                return True
-            else:
-                print("Не удалось создать тестовое уведомление")
-                return False
-        except Exception as e:
-            print(f"Ошибка при создании тестового уведомления: {str(e)}")
-            return False
-
-    # Вызов функции создания тестового уведомления
-    create_test_notification()
 
     # Отображение заставки
     splash = SplashScreen()

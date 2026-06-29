@@ -3,8 +3,10 @@ from .db_manager import DBManager
 
 class Task:
 
-    def __init__(self, id=None, project_id=None, developer_id=None, description="", status="новая", hours_worked=0,
-                 created_at=None, updated_at=None):
+    VALID_STATUSES = ['новая', 'в работе', 'на проверке', 'завершено']
+
+    def __init__(self, id=None, project_id=None, developer_id=None, description="", status="новая",
+                 hours_worked=0, created_at=None, updated_at=None, db_manager=None):
         self.id = id
         self.project_id = project_id
         self.developer_id = developer_id
@@ -13,10 +15,7 @@ class Task:
         self.hours_worked = hours_worked
         self.created_at = created_at
         self.updated_at = updated_at
-
-        # Добавляем инициализацию db_manager
-        from models.db_manager import DBManager
-        self.db_manager = DBManager()
+        self.db_manager = db_manager or DBManager()
 
     def __str__(self):
         return f"Task(id={self.id}, description='{self.description}', status='{self.status}', hours_worked={self.hours_worked})"
@@ -52,8 +51,8 @@ class Task:
         if not self.description:
             return False, "Описание задачи не может быть пустым"
 
-        if self.status not in ['в работе', 'завершено']:
-            return False, "Статус должен быть одним из: в работе, завершено"
+        if self.status not in self.VALID_STATUSES:
+            return False, f"Статус должен быть одним из: {', '.join(self.VALID_STATUSES)}"
 
         if self.hours_worked < 0:
             return False, "Количество часов не может быть отрицательным"

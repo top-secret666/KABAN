@@ -92,6 +92,7 @@ class User:
                 # Если пароль был изменен, обновляем его
                 if self.password and not self.password.startswith('$'):
                     hashed_password = self._hash_password(self.password)
+                    self.password = hashed_password
                     query += ", password = ?"
                     params.append(hashed_password)
                 
@@ -100,9 +101,9 @@ class User:
                 
                 self.db_manager.conn.execute(query, params)
             else:
-                # Создание нового пользователя
                 hashed_password = self._hash_password(self.password)
-                
+                self.password = hashed_password
+
                 query = """
                     INSERT INTO users (username, password, email, full_name, 
                                       role, is_active, last_login, created_at)
@@ -218,18 +219,6 @@ class User:
             if len(parts) == 3:
                 salt = parts[1]
                 stored_hash = parts[2]
-
-                # Специальная проверка для пользователя admin с известным хешем
-                if salt == "f47ac10b-58cc-4372-a567-0e02b2c3d479" and stored_hash == "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918":
-                    if password == "admin":
-                        return True
-
-                # Проверка для пользователей с MD5 хешем
-                if stored_hash == "5f4dcc3b5aa765d61d8327deb882cf99":
-                    if password == "password":
-                        return True
-
-                # Стандартная проверка с солью
                 computed_hash = hashlib.sha256((password + salt).encode()).hexdigest()
                 return computed_hash == stored_hash
 
