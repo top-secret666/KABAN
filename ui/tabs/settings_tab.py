@@ -372,26 +372,37 @@ class SettingsTab(QWidget):
             self.accent_color = color
             self.accent_color_button.setStyleSheet(f"background-color: {color.name()};")
 
+            self.accent_color_button.setStyleSheet(
+                f"background-color: {color.name()}; border: 1px solid #888; border-radius: 4px;"
+            )
+
+    def choose_bg_color(self):
+        color = QColorDialog.getColor(self.bg_color, self, "Цвет фона рабочей области")
+        if color.isValid():
+            self.bg_color = color
+            self.bg_color_button.setStyleSheet(
+                f"background-color: {color.name()}; border: 1px solid #888; border-radius: 4px;"
+            )
+            idx = self.bg_preset_combo.findData('custom')
+            if idx >= 0:
+                self.bg_preset_combo.setCurrentIndex(idx)
+
     def save_interface_settings(self):
-        """
-        Сохранение настроек интерфейса
-        """
-        # Получение данных из полей
-        theme = self.theme_combo.currentData()
-        font_size = self.font_size_spin.value()
-        accent_color = self.accent_color.name()
-        rows_per_page = self.rows_per_page_spin.value()
-        alternate_row_colors = self.alternate_row_colors_check.isChecked()
+        config = self._build_theme_config()
+        self.settings.setValue("theme", config['theme'])
+        self.settings.setValue("font_size", config['font_size'])
+        self.settings.setValue("accent_color", config['accent'])
+        self.settings.setValue("bg_preset", config['bg_preset'])
+        self.settings.setValue("bg_color", config['bg_main'] or self.bg_color.name())
+        self.settings.setValue("rows_per_page", self.rows_per_page_spin.value())
+        self.settings.setValue("alternate_row_colors", self.alternate_row_colors_check.isChecked())
 
-        # Сохранение настроек
-        self.settings.setValue("theme", theme)
-        self.settings.setValue("font_size", font_size)
-        self.settings.setValue("accent_color", accent_color)
-        self.settings.setValue("rows_per_page", rows_per_page)
-        self.settings.setValue("alternate_row_colors", alternate_row_colors)
+        from PyQt5.QtWidgets import QApplication
+        app = QApplication.instance()
+        if app:
+            apply_theme(app, config)
 
-        QMessageBox.information(self, "Успех",
-                                "Настройки интерфейса сохранены. Изменения вступят в силу после перезапуска приложения.")
+        QMessageBox.information(self, "Успех", "Настройки интерфейса применены.")
 
     def reset_interface_settings(self):
         """
@@ -405,15 +416,19 @@ class SettingsTab(QWidget):
         )
 
         if reply == QMessageBox.Yes:
-            # Сброс настроек
             self.theme_combo.setCurrentIndex(self.theme_combo.findData("light"))
-            self.font_size_spin.setValue(12)
-            self.accent_color = QColor("#1976D2")
-            self.accent_color_button.setStyleSheet(f"background-color: {self.accent_color.name()};")
+            self.bg_preset_combo.setCurrentIndex(self.bg_preset_combo.findData("default"))
+            self.font_size_spin.setValue(10)
+            self.accent_color = QColor("#2FC6F6")
+            self.bg_color = QColor("#EDEEF0")
+            self.accent_color_button.setStyleSheet(
+                f"background-color: {self.accent_color.name()}; border: 1px solid #888; border-radius: 4px;"
+            )
+            self.bg_color_button.setStyleSheet(
+                f"background-color: {self.bg_color.name()}; border: 1px solid #888; border-radius: 4px;"
+            )
             self.rows_per_page_spin.setValue(20)
             self.alternate_row_colors_check.setChecked(True)
-
-            # Сохранение настроек
             self.save_interface_settings()
 
     def browse_db_path(self):
