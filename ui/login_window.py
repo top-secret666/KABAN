@@ -16,6 +16,8 @@ class LoginWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.auth_controller = AuthController()
+        self.user = None
+        self._authenticated = False
         self.init_ui()
 
     def init_ui(self):
@@ -182,8 +184,8 @@ class LoginWindow(QDialog):
 
         if result['success']:
             self.user = result['data']
-            QMessageBox.information(self, 'Успех', f'Добро пожаловать, {self.user.full_name}!')
-            self.accept()  # вызовет super().accept()
+            self._authenticated = True
+            self.accept()
         else:
             QMessageBox.critical(self, 'Ошибка', result['error_message'])
 
@@ -194,25 +196,24 @@ class LoginWindow(QDialog):
         from ui.register_window import RegisterWindow
         register_window = RegisterWindow()
         if register_window.exec_():
-            # Если регистрация успешна, заполняем поля для входа
             self.username_input.setText(register_window.username)
             self.password_input.setText(register_window.password)
+            self.login()
 
     def accept(self):
         super().accept()
 
     def closeEvent(self, event):
-        """
-        Обработка закрытия окна
-        """
-        if not hasattr(self, 'accepted') or not self.accepted:
-            reply = QMessageBox.question(
-                self, 'Выход', 'Вы уверены, что хотите выйти?',
-                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
-            )
+        if self._authenticated:
+            event.accept()
+            return
 
-            if reply == QMessageBox.Yes:
-                event.accept()
-                sys.exit(0)
-            else:
-                event.ignore()
+        reply = QMessageBox.question(
+            self, 'Выход', 'Вы уверены, что хотите выйти?',
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            event.accept()
+            sys.exit(0)
+        else:
+            event.ignore()

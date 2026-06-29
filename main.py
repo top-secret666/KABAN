@@ -36,8 +36,11 @@ def main():
         splash.close()
         login_window = LoginWindow()
         if login_window.exec_():
-            main_window = MainWindow(login_window.user)
-            main_window.show()
+            # Ссылка на app, иначе окно сразу уничтожается сборщиком мусора
+            app.main_window = MainWindow(login_window.user)
+            app.main_window.show()
+        else:
+            sys.exit(0)
 
     QTimer.singleShot(2500, show_login)
     sys.exit(app.exec_())
