@@ -11,7 +11,7 @@ from ui.dialogs.project_dialog import ProjectDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
 from ui.resources.icon_helper import get_icon
-from ui.resources.table_helper import configure_table
+from ui.resources.table_helper import configure_table, refresh_table_theme
 
 
 class ProjectsTab(QWidget):
@@ -168,6 +168,8 @@ class ProjectsTab(QWidget):
                 self.projects_table.setItem(row, 3, deadline_item)
                 self.projects_table.setItem(row, 4, budget_item)
                 self.projects_table.setItem(row, 5, status_item)
+
+            refresh_table_theme(self.projects_table)
 
             # Обновление списка клиентов для фильтра
             self.update_client_filter(projects)

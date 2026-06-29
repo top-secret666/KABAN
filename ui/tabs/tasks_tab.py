@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
                             QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
                             QLineEdit, QComboBox, QMessageBox, QFileDialog)
-from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QSize
 
 from controllers import TaskController, ProjectController, DeveloperController, ExportController
