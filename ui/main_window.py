@@ -221,7 +221,7 @@ class MainWindow(QMainWindow):
         version_label = QLabel("  v1.0.0  ")
         version_label.setFont(QFont('Segoe UI', 10))
         self.statusbar.addPermanentWidget(version_label)
-        self.statusbar.showMessage('Готово', 3000)
+        self.statusbar.showMessage(f'Добро пожаловать, {self.user.full_name}!', 5000)
 
     def add_item(self):
         current_tab = self._current_tab()
