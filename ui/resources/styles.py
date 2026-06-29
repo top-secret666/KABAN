@@ -248,6 +248,9 @@ QFrame#content_card {{
 QWidget#page_content {{
     background-color: {BG_MAIN};
 }}
+QWidget#page_body {{
+    background-color: {BG_MAIN};
+}}
 """
 
 # ═══════════════════════════════════════════════════════

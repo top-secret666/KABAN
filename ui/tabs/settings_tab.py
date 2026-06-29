@@ -1,10 +1,12 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                              QGroupBox, QFormLayout, QLineEdit, QCheckBox, QComboBox,
                              QTabWidget, QFileDialog, QMessageBox, QSpinBox, QColorDialog)
-from PyQt5.QtGui import QIcon, QFont, QColor
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import Qt, QSettings
 
 from controllers import AuthController
+from ui.widgets.tab_page import TabPage
+from ui.resources.icon_helper import get_icon
 
 
 class SettingsTab(QWidget):
@@ -20,24 +22,12 @@ class SettingsTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        """
-        Инициализация интерфейса
-        """
-        # Основной layout
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(20)
+        page = TabPage('Настройки', 'Профиль, интерфейс и база данных')
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(page)
+        main_layout = page.content_layout
 
-        # Заголовок
-        header_layout = QHBoxLayout()
-
-        title_label = QLabel("Настройки")
-        title_label.setFont(QFont('Arial', 16, QFont.Bold))
-        header_layout.addWidget(title_label)
-
-        main_layout.addLayout(header_layout)
-
-        # Создание вкладок для разных типов настроек
         self.tab_widget = QTabWidget()
 
         # Вкладка "Профиль"
@@ -92,11 +82,11 @@ class SettingsTab(QWidget):
         profile_buttons_layout = QHBoxLayout()
 
         save_profile_button = QPushButton("Сохранить изменения")
-        save_profile_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        save_profile_button.setIcon(get_icon('save'))
         save_profile_button.clicked.connect(self.save_profile)
 
         change_password_button = QPushButton("Изменить пароль")
-        change_password_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        change_password_button.setIcon(get_icon('edit'))
         change_password_button.clicked.connect(self.change_password)
 
         profile_buttons_layout.addWidget(save_profile_button)
@@ -161,11 +151,11 @@ class SettingsTab(QWidget):
         interface_buttons_layout = QHBoxLayout()
 
         save_interface_button = QPushButton("Сохранить настройки")
-        save_interface_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        save_interface_button.setIcon(get_icon('save'))
         save_interface_button.clicked.connect(self.save_interface_settings)
 
         reset_interface_button = QPushButton("Сбросить настройки")
-        reset_interface_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        reset_interface_button.setIcon(get_icon('refresh'))
         reset_interface_button.clicked.connect(self.reset_interface_settings)
 
         interface_buttons_layout.addWidget(save_interface_button)
@@ -218,11 +208,11 @@ class SettingsTab(QWidget):
         database_buttons_layout = QHBoxLayout()
 
         save_database_button = QPushButton("Сохранить настройки")
-        save_database_button.setIcon(QIcon('ui/resources/icons/save.png'))
+        save_database_button.setIcon(get_icon('save'))
         save_database_button.clicked.connect(self.save_database_settings)
 
         backup_now_button = QPushButton("Создать резервную копию")
-        backup_now_button.setIcon(QIcon('ui/resources/icons/backup.png'))
+        backup_now_button.setIcon(get_icon('backup'))
         backup_now_button.clicked.connect(self.create_backup)
 
         database_buttons_layout.addWidget(save_database_button)

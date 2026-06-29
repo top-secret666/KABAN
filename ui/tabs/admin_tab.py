@@ -21,6 +21,7 @@ class UserEditDialog(QDialog):
         self.init_ui()
 
     def init_ui(self):
+        self.setStyleSheet(GLOBAL_STYLE)
         self.setWindowTitle("Редактирование пользователя" if self.user else "Добавление пользователя")
         self.setMinimumWidth(400)
 
