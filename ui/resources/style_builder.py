@@ -280,16 +280,14 @@ def _dialogs(p):
 QDialog {{
     background-color: {p['bg_card']}; border: 1px solid {p['border']}; border-radius: 10px;
 }}
-QFrame#dialog_header {{
+QFrame#dialog_accent {{
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
         stop:0 {p['primary']}, stop:1 {p['primary_dark']});
-    border-top-left-radius: 9px; border-top-right-radius: 9px;
-    border: none; min-height: 48px; max-height: 48px;
-}}
-QLabel#dialog_title {{
-    color: white; font-size: 15px; font-weight: 600;
-    font-family: {FONT_FAMILY}; background: transparent; border: none;
-    padding-left: 4px;
+    border: none;
+    border-top-left-radius: 9px;
+    border-top-right-radius: 9px;
+    max-height: 3px;
+    min-height: 3px;
 }}
 QWidget#dialog_body {{ background-color: {p['bg_card']}; border: none; }}
 QFrame#dialog_footer {{

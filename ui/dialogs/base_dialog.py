@@ -1,10 +1,10 @@
 """Базовый диалог с шапкой и корректными флагами окна."""
 
 from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QWidget,
+    QDialog, QVBoxLayout, QHBoxLayout, QFrame, QWidget,
     QGraphicsDropShadowEffect,
 )
-from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
 
 from ui.resources.theme_manager import get_stylesheet
@@ -42,16 +42,10 @@ class BaseDialog(QDialog):
         outer.setContentsMargins(0, 0, 0, 0)
         outer.setSpacing(0)
 
-        header = QFrame()
-        header.setObjectName('dialog_header')
-        header.setFixedHeight(48)
-        hl = QHBoxLayout(header)
-        hl.setContentsMargins(20, 0, 20, 0)
-        title_lbl = QLabel(title)
-        title_lbl.setObjectName('dialog_title')
-        title_lbl.setFont(QFont('Segoe UI', 13, QFont.DemiBold))
-        hl.addWidget(title_lbl)
-        outer.addWidget(header)
+        accent = QFrame()
+        accent.setObjectName('dialog_accent')
+        accent.setFixedHeight(3)
+        outer.addWidget(accent)
 
         self.body = QWidget()
         self.body.setObjectName('dialog_body')
