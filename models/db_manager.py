@@ -1,6 +1,8 @@
 import sqlite3
 import os
 
+from paths import DB_PATH
+
 
 class DBManager:
     _instance = None
@@ -8,7 +10,7 @@ class DBManager:
     def __new__(cls, db_path=None):
         if cls._instance is None:
             cls._instance = super(DBManager, cls).__new__(cls)
-            cls._instance.db_path = db_path or os.path.join(os.path.dirname(os.path.dirname(__file__)), 'kaban.db')
+            cls._instance.db_path = db_path or DB_PATH
             cls._instance.conn = None
             cls._instance.cursor = None
         return cls._instance
@@ -22,8 +24,7 @@ class DBManager:
             self.connect()
             self.conn.execute("BEGIN TRANSACTION")
             return True
-        except Exception as e:
-            print(f"Ошибка при начале транзакции: {e}")
+        except Exception:
             return False
 
     def connect(self):
@@ -62,15 +63,7 @@ class DBManager:
          """
         if self.cursor:
             columns = [column[0] for column in self.cursor.description]
-            print(f"Столбцы в результате запроса: {columns}")
-
-            result = []
-            for row in self.cursor.fetchall():
-                row_dict = dict(zip(columns, row))
-                print(f"Строка из базы данных: {row_dict}")
-                result.append(row_dict)
-
-            return result
+            return [dict(zip(columns, row)) for row in self.cursor.fetchall()]
         return []
 
     def commit(self):
@@ -80,44 +73,17 @@ class DBManager:
         try:
             self.conn.commit()
             return True
-        except Exception as e:
-            print(f"Ошибка при фиксации изменений: {e}")
-            return False
-
-    @staticmethod
-    def check_projects_status():
-        db_manager = DBManager()
-        db_manager.connect()
-        db_manager.execute("SELECT id, name, status FROM projects")
-        results = db_manager.fetch_all()
-        print("Результаты прямого запроса:")
-        for result in results:
-            print(f"ID: {result.get('id')}, Название: {result.get('name')}, Статус: {result.get('status')}")
-
-    @staticmethod
-    def check_table_structure():
-        db_manager = DBManager()
-        db_manager.connect()
-        db_manager.execute("PRAGMA table_info(projects)")
-        columns = db_manager.fetch_all()
-        print("Структура таблицы projects:")
-        for column in columns:
-            print(f"Имя: {column.get('name')}, Тип: {column.get('type')}")
-
-    def rollback(self):
-        """
-        Откатывает изменения в базе данных
-        """
-        try:
-            self.conn.rollback()
-            return True
-        except Exception as e:
-            print(f"Ошибка при откате изменений: {e}")
+        except Exception:
             return False
 
     def rollback(self):
         if self.conn:
-            self.conn.rollback()
+            try:
+                self.conn.rollback()
+            except Exception:
+                return False
+            return True
+        return False
 
     def get_last_row_id(self):
         return self.cursor.lastrowid
@@ -151,6 +117,5 @@ class DBManager:
 
 
 
-        except Exception as e:
-            print(f"Ошибка при создании таблиц: {e}")
+        except Exception:
             return False
