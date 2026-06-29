@@ -150,33 +150,35 @@ class KanbanColumn(QFrame):
 
 
 class StatCard(QFrame):
-    """Карточка статистики в стиле Bitrix24"""
+    """Карточка статистики."""
+
     def __init__(self, title, value, color, icon_text="", subtitle="", parent=None):
         super().__init__(parent)
         self.setObjectName("stat_card")
-        self.setFixedHeight(120)
+        self.setFixedHeight(128)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         shadow = QGraphicsDropShadowEffect(self)
-        shadow.setBlurRadius(16)
-        shadow.setOffset(0, 3)
-        shadow.setColor(QColor(0, 0, 0, 14))
+        shadow.setBlurRadius(24)
+        shadow.setOffset(0, 4)
+        shadow.setColor(QColor(15, 23, 42, 12))
         self.setGraphicsEffect(shadow)
 
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(20, 16, 20, 16)
+        layout.setContentsMargins(22, 18, 22, 18)
         layout.setSpacing(16)
 
         icon_frame = QFrame()
-        icon_frame.setFixedSize(52, 52)
+        icon_frame.setFixedSize(48, 48)
         icon_frame.setStyleSheet(f"""
-            background-color: {color}18;
-            border-radius: 26px;
-            border: 2px solid {color}40;
+            background-color: {color}22;
+            border-radius: 14px;
+            border: none;
         """)
         icon_lbl = QLabel(icon_text)
         icon_lbl.setAlignment(Qt.AlignCenter)
-        icon_lbl.setFont(QFont('Segoe UI Emoji', 20))
+        icon_lbl.setFont(QFont('Segoe UI', 15, QFont.Bold))
+        icon_lbl.setStyleSheet(f"color: {color}; background: transparent; border: none;")
         icon_layout = QVBoxLayout(icon_frame)
         icon_layout.setContentsMargins(0, 0, 0, 0)
         icon_layout.addWidget(icon_lbl)
@@ -253,17 +255,16 @@ class DashboardTab(QWidget):
         header = QFrame()
         header.setObjectName('dashboard_header')
         header.setStyleSheet(
-            f"QFrame#dashboard_header {{"
-            f" background-color: {BG_CARD}; border-bottom: 1px solid {BORDER}; }}"
+            f"QFrame#dashboard_header {{ background-color: transparent; border: none; }}"
         )
-        header.setFixedHeight(64)
+        header.setFixedHeight(72)
         self._header = header
         header_layout = QHBoxLayout(header)
-        header_layout.setContentsMargins(24, 0, 24, 0)
+        header_layout.setContentsMargins(32, 12, 32, 8)
 
-        greeting = QLabel(f"👋 {self.user.full_name}")
+        greeting = QLabel(f"Привет, {self.user.full_name.split()[0] if self.user.full_name else ''}")
         greeting.setObjectName('dashboard_greeting')
-        greeting.setFont(QFont('Segoe UI', 16, QFont.DemiBold))
+        greeting.setFont(QFont('Segoe UI', 22, QFont.Bold))
         greeting.setStyleSheet(
             f"QLabel#dashboard_greeting {{ color: {TEXT_PRIMARY}; border: none; background: transparent; }}"
         )
@@ -271,8 +272,8 @@ class DashboardTab(QWidget):
         header_layout.addWidget(greeting)
         header_layout.addStretch()
 
-        refresh_btn = QPushButton("⟳  Обновить")
-        refresh_btn.setObjectName("flat")
+        refresh_btn = QPushButton("Обновить")
+        refresh_btn.setObjectName("ghost")
         refresh_btn.setFixedHeight(36)
         refresh_btn.setCursor(Qt.PointingHandCursor)
         refresh_btn.clicked.connect(self.refresh_data)
@@ -292,8 +293,8 @@ class DashboardTab(QWidget):
         )
         self._content = content
         self._content_layout = QVBoxLayout(content)
-        self._content_layout.setContentsMargins(24, 20, 24, 20)
-        self._content_layout.setSpacing(20)
+        self._content_layout.setContentsMargins(32, 12, 32, 28)
+        self._content_layout.setSpacing(24)
 
         self._stats_host = QWidget()
         self._stats_host.setObjectName('dashboard_stats')
@@ -306,9 +307,9 @@ class DashboardTab(QWidget):
         self._content_layout.addWidget(self._stats_host)
 
         board_header = QHBoxLayout()
-        board_title = QLabel("📋  Kanban-доска")
+        board_title = QLabel("Kanban-доска")
         board_title.setObjectName('dashboard_board_title')
-        board_title.setFont(QFont('Segoe UI', 15, QFont.DemiBold))
+        board_title.setFont(QFont('Segoe UI', 17, QFont.DemiBold))
         board_title.setStyleSheet(
             f"QLabel#dashboard_board_title {{ color: {TEXT_PRIMARY}; background: transparent; border: none; }}"
         )
@@ -404,15 +405,15 @@ class DashboardTab(QWidget):
         done_count = len([t for t in all_tasks if getattr(t, 'status', '') == 'завершено'])
 
         return [
-            StatCard("Проекты", len(projects), PRIMARY_COLOR, "📁", "Всего активных"),
-            StatCard("Всего задач", len(all_tasks), "#6C5CE7", "📝", f"Новых: {new_count}"),
-            StatCard("В работе", progress_count, STATUS_PROGRESS, "🔥", "Активные задачи"),
-            StatCard("Завершено", done_count, STATUS_DONE, "✅", "Выполненных"),
+            StatCard("Проекты", len(projects), PRIMARY_COLOR, "П", "Всего активных"),
+            StatCard("Всего задач", len(all_tasks), "#6366F1", "З", f"Новых: {new_count}"),
+            StatCard("В работе", progress_count, STATUS_PROGRESS, "Р", "Активные задачи"),
+            StatCard("Завершено", done_count, STATUS_DONE, "✓", "Выполненных"),
         ]
 
     def _populate_notifications(self, layout):
         header_layout = QHBoxLayout()
-        title_label = QLabel("🔔  Уведомления")
+        title_label = QLabel("Уведомления")
         title_label.setFont(QFont('Segoe UI', 14, QFont.DemiBold))
         title_label.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none;")
         header_layout.addWidget(title_label)
@@ -478,15 +479,14 @@ class DashboardTab(QWidget):
             QPushButton#btn_primary {{
                 background-color: {p['primary']};
                 color: {p['text_on_primary']};
-                border: 1px solid {p['primary_dark']};
-                border-radius: 8px;
-                padding: 8px 18px;
+                border: none;
+                border-radius: 10px;
+                padding: 10px 20px;
                 font-size: 13px;
                 font-weight: 600;
             }}
             QPushButton#btn_primary:hover {{
                 background-color: {p['primary_dark']};
-                border-color: {p['primary_pressed']};
             }}
         """)
 
