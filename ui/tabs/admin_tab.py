@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt
 from controllers.auth_controller import AuthController
 from ui.widgets.tab_page import TabPage
 from ui.resources.icon_helper import get_icon
-from ui.resources.table_helper import configure_table
+from ui.resources.table_helper import configure_table, refresh_table_theme
 from ui.dialogs.base_dialog import BaseDialog
 
 
@@ -200,6 +200,8 @@ class AdminTab(QWidget):
 
                     # Сохраняем объект пользователя в первой ячейке
                     self.users_table.item(row, 0).setData(Qt.UserRole, user)
+
+                refresh_table_theme(self.users_table)
             else:
                 # Если результат не соответствует ожидаемому формату
                 error_message = result.get('error_message') if isinstance(result, dict) else str(result)

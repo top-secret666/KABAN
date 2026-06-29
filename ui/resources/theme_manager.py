@@ -208,7 +208,7 @@ def refresh_ui_widgets(app=None):
     from ui.resources.table_helper import refresh_all_tables
     for widget in app.topLevelWidgets():
         refresh_all_tables(widget)
-        if hasattr(widget, 'apply_theme') and widget.metaObject().className() == 'MainWindow':
+        if type(widget).__name__ == 'MainWindow' and hasattr(widget, 'apply_theme'):
             widget.apply_theme()
 
 
