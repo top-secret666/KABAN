@@ -23,9 +23,8 @@ class UserEditDialog(BaseDialog):
         self._build()
 
     def _build(self):
-        layout = QFormLayout(self)
-        layout.setContentsMargins(24, 20, 24, 20)
-        layout.setSpacing(12)
+        form = QFormLayout()
+        form.setSpacing(12)
 
         self.username_edit = QLineEdit()
         self.password_edit = QLineEdit()
@@ -45,22 +44,21 @@ class UserEditDialog(BaseDialog):
             self.is_active_check.setChecked(self.user.is_active)
             self.password_edit.setPlaceholderText("Оставьте пустым, чтобы не менять")
 
-        layout.addRow("Имя пользователя:", self.username_edit)
-        layout.addRow("Пароль:", self.password_edit)
-        layout.addRow("Email:", self.email_edit)
-        layout.addRow("Полное имя:", self.full_name_edit)
-        layout.addRow("Роль:", self.role_combo)
-        layout.addRow("Активен:", self.is_active_check)
+        form.addRow("Имя пользователя:", self.username_edit)
+        form.addRow("Пароль:", self.password_edit)
+        form.addRow("Email:", self.email_edit)
+        form.addRow("Полное имя:", self.full_name_edit)
+        form.addRow("Роль:", self.role_combo)
+        form.addRow("Активен:", self.is_active_check)
+        self.body_layout.addLayout(form)
 
-        button_layout = QHBoxLayout()
         self.save_button = QPushButton("Сохранить")
         self.cancel_button = QPushButton("Отмена")
         self.cancel_button.setObjectName('flat')
         self.save_button.clicked.connect(self.save_user)
         self.cancel_button.clicked.connect(self.reject)
-        button_layout.addWidget(self.save_button)
-        button_layout.addWidget(self.cancel_button)
-        layout.addRow("", button_layout)
+        self.add_footer_button(self.cancel_button)
+        self.add_footer_button(self.save_button)
 
     def save_user(self):
         """

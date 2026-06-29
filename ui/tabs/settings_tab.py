@@ -7,6 +7,8 @@ from PyQt5.QtCore import Qt, QSettings
 from controllers import AuthController
 from ui.widgets.tab_page import TabPage
 from ui.resources.icon_helper import get_icon
+from ui.resources.theme_manager import BG_PRESETS, apply_theme, get_config
+from ui.dialogs.base_dialog import BaseDialog
 
 
 class SettingsTab(QWidget):
