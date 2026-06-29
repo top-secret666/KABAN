@@ -31,4 +31,4 @@ CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions (user_id);
 
 -- Добавление администратора по умолчанию (пароль: admin)
 INSERT OR IGNORE INTO users (username, password, email, full_name, role, is_active)
-VALUES ('admin', '$f47ac10b-58cc-4372-a567-0e02b2c3d479$8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'admin@example.com', 'Администратор', 'admin', 1);
+VALUES ('admin', '$kaban_admin_v1$5339711063c99e0091dd0d254336e5373e1c2bdd0235f814696d45eeebab7e86', 'admin@example.com', 'Администратор', 'admin', 1);

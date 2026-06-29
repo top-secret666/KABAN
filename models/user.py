@@ -228,6 +228,11 @@ class User:
                     self.password = self._hash_password(password)
                     self.save()
                     return True
+                legacy_md5 = hashlib.md5(password.encode()).hexdigest()
+                if legacy_md5 == stored_hash:
+                    self.password = self._hash_password(password)
+                    self.save()
+                    return True
 
         # Проверка для простого SHA-256 хеша без соли
         simple_hash = hashlib.sha256(password.encode()).hexdigest()
