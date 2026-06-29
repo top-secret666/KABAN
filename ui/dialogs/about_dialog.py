@@ -1,26 +1,22 @@
-from PyQt5.QtWidgets import (QDialog, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
-                            QTabWidget, QTextBrowser)
+from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QTabWidget, QTextBrowser, QPushButton, QLabel)
 from PyQt5.QtGui import QFont, QPixmap
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt
 
+from ui.dialogs.base_dialog import BaseDialog
 from ui.resources.icon_helper import get_icon
-from ui.resources.styles import GLOBAL_STYLE, TEXT_PRIMARY, TEXT_SECONDARY, PRIMARY_COLOR
+from ui.resources.styles import TEXT_PRIMARY, TEXT_SECONDARY, PRIMARY_COLOR
 
 
-class AboutDialog(QDialog):
+class AboutDialog(BaseDialog):
     """Диалог «О программе»."""
 
     def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setStyleSheet(GLOBAL_STYLE)
-        self.init_ui()
-
-    def init_ui(self):
-        self.setWindowTitle('О программе')
+        super().__init__(parent, 'О программе')
         self.setWindowIcon(get_icon('about'))
         self.setMinimumSize(600, 420)
-        self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowTitleHint)
+        self._build()
 
+    def _build(self):
         main_layout = QVBoxLayout(self)
         main_layout.setContentsMargins(28, 24, 28, 24)
         main_layout.setSpacing(20)

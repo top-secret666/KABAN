@@ -25,7 +25,9 @@ class LoginWindow(QDialog):
         self.setWindowTitle('KABAN:manager')
         self.setWindowIcon(QIcon('ui/resources/icons/logo.png'))
         self.setFixedSize(440, 560)
-        self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
+        self.setWindowFlags(
+            Qt.Dialog | Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint
+        )
 
         self.setStyleSheet(f"""
             QDialog {{

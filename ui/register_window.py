@@ -114,7 +114,7 @@ class RegisterWindow(QDialog):
         self.full_name_input.setStyleSheet(input_style)
 
         self.role_combo = QComboBox()
-        self.role_combo.addItems(['developer', 'manager', 'admin'])
+        self.role_combo.addItem('Разработчик', 'developer')
         self.role_combo.setStyleSheet(input_style)
 
         for label_text, widget in [
@@ -182,7 +182,7 @@ class RegisterWindow(QDialog):
         confirm_password = self.confirm_password_input.text()
         email = self.email_input.text().strip()
         full_name = self.full_name_input.text().strip()
-        role = self.role_combo.currentText()
+        role = self.role_combo.currentData() or 'developer'
 
         if not username or not password or not confirm_password or not email or not full_name:
             QMessageBox.warning(self, 'Ошибка', 'Пожалуйста, заполните все обязательные поля')
