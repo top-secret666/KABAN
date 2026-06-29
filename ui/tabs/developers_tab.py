@@ -8,7 +8,7 @@ from ui.dialogs.new_developer_dialog import NewDeveloperDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
 from ui.resources.icon_helper import get_icon
-from ui.resources.table_helper import configure_table, refresh_table_theme
+from ui.resources.table_helper import configure_table, refresh_table_theme, unhide_all_rows
 
 
 class DevelopersTab(QWidget):
@@ -131,6 +131,7 @@ class DevelopersTab(QWidget):
                 self.developers_table.setItem(row, 3, rate_item)
 
             refresh_table_theme(self.developers_table)
+            unhide_all_rows(self.developers_table)
 
     def apply_filters(self):
         """

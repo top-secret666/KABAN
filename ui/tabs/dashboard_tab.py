@@ -84,6 +84,7 @@ class KanbanColumn(QFrame):
         self.setObjectName(f"kanban_column_{object_suffix}")
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setMinimumWidth(260)
+        self.setMinimumHeight(320)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(12, 14, 12, 14)
@@ -146,7 +147,7 @@ class KanbanColumn(QFrame):
 
         cards_layout.addStretch()
         scroll.setWidget(cards_widget)
-        layout.addWidget(scroll)
+        layout.addWidget(scroll, stretch=1)
 
 
 class StatCard(QFrame):

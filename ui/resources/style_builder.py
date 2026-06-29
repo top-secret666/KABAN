@@ -140,9 +140,28 @@ QComboBox:hover {{ border: 1px solid {p['border_hover']}; }}
 QComboBox:focus {{ border: 1.5px solid {p['primary']}; background-color: {p['bg_card']}; }}
 QComboBox::drop-down {{ border: none; width: 28px; }}
 QComboBox QAbstractItemView {{
-    border: 1px solid {p['border']}; border-radius: 10px;
-    background-color: {p['bg_card']}; selection-background-color: {p['primary_light']};
-    color: {p['text_primary']}; padding: 4px;
+    border: 1px solid {p['border']};
+    border-radius: 10px;
+    background-color: {p['bg_card']};
+    color: {p['text_primary']};
+    padding: 4px;
+    outline: none;
+    selection-background-color: {p['primary_light']};
+    selection-color: {p['text_primary']};
+}}
+QComboBox QAbstractItemView::item {{
+    min-height: 30px;
+    padding: 6px 12px;
+    color: {p['text_primary']};
+    background-color: {p['bg_card']};
+}}
+QComboBox QAbstractItemView::item:hover {{
+    background-color: {p['primary_light']};
+    color: {p['text_primary']};
+}}
+QComboBox QAbstractItemView::item:selected {{
+    background-color: {p['primary_light']};
+    color: {p['text_primary']};
 }}
 QDateEdit, QSpinBox, QDoubleSpinBox {{
     border: 1px solid {p['border']}; border-radius: 10px; padding: 8px 14px;

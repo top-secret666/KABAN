@@ -9,7 +9,8 @@ from ui.dialogs.task_dialog import TaskDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
 from ui.resources.icon_helper import get_icon
-from ui.resources.table_helper import configure_table, apply_task_row_colors
+from ui.resources.table_helper import configure_table, apply_task_row_colors, unhide_all_rows
+from ui.resources.combo_helper import reload_combo
 
 class TasksTab(QWidget):
     """
@@ -125,72 +126,42 @@ class TasksTab(QWidget):
         self.load_tasks()
 
     def load_projects_and_developers(self):
-        """
-        Загрузка списка проектов и разработчиков для фильтров
-        """
-        # Если пользователь - разработчик, загружаем только его проекты
+        """Загрузка списка проектов и разработчиков для фильтров."""
         if self.user and self.user.role == 'developer':
-            # Сначала получаем ID разработчика по ID пользователя
             developer_result = self.developer_controller.get_developer_by_user_id(self.user.id)
-
             if developer_result['success'] and developer_result['data']:
                 developer = developer_result['data']
-                # Получаем проекты разработчика
                 result = self.project_controller.get_projects_by_developer(developer.id)
-
-                if result['success']:
-                    # Очищаем текущий список проектов в комбобоксе
-                    self.project_combo.clear()
-                    self.project_combo.addItem("Все", "")
-
-                    # Добавляем только проекты разработчика
-                    for project in result['data']:
-                        self.project_combo.addItem(project.name, project.id)
+                projects = result['data'] if result.get('success') else []
+            else:
+                projects = []
+            reload_combo(
+                self.project_combo,
+                [(p.name, p.id) for p in projects],
+                first_label='Все',
+                first_data='',
+            )
         else:
-            # Загрузка всех проектов для менеджеров и администраторов
             projects_result = self.project_controller.get_all_projects()
             if projects_result['success']:
                 projects = projects_result['data']
+                reload_combo(
+                    self.project_combo,
+                    [(p.name, p.id) for p in projects],
+                    first_label='Все',
+                    first_data='',
+                )
 
-                # Сохранение текущего выбора
-                current_project = self.project_combo.currentData()
-
-                # Очистка комбобокса
-                self.project_combo.clear()
-                self.project_combo.addItem("Все", "")
-
-                # Добавление проектов
-                for project in projects:
-                    self.project_combo.addItem(project.name, project.id)
-
-                # Восстановление выбора
-                if current_project:
-                    index = self.project_combo.findData(current_project)
-                    if index >= 0:
-                        self.project_combo.setCurrentIndex(index)
-
-        # Загрузка разработчиков (только для менеджеров и администраторов)
         if self.user.role != 'developer':
             developers_result = self.developer_controller.get_all_developers()
             if developers_result['success']:
                 developers = developers_result['data']
-
-                # Сохранение текущего выбора
-                current_developer = self.developer_combo.currentData()
-
-                # Очистка комбобокса
-                self.developer_combo.clear()
-                self.developer_combo.addItem("Все", "")
-
-                # Добавление разработчиков
-                for developer in developers:
-                    self.developer_combo.addItem(developer.full_name, developer.id)
-
-                # Восстановление выбора
-                if current_developer:
-                    index = self.developer_combo.findData(current_developer)
-                    if index >= 0:
-                        self.developer_combo.setCurrentIndex(index)
+                reload_combo(
+                    self.developer_combo,
+                    [(d.full_name, d.id) for d in developers],
+                    first_label='Все',
+                    first_data='',
+                )
 
     def load_tasks(self):
         """
@@ -221,15 +192,15 @@ class TasksTab(QWidget):
 
                     # Заполнение ячеек таблицы
                     id_item = QTableWidgetItem(str(task.id))
-                    project_name = getattr(task, 'project_name', 'Неизвестный проект')
+                    project_name = getattr(task, 'project_name', None) or 'Неизвестный проект'
                     project_item = QTableWidgetItem(project_name)
-                    developer_name = getattr(task, 'developer_name', 'Не назначен')
+                    developer_name = getattr(task, 'developer_name', None) or 'Не назначен'
                     developer_item = QTableWidgetItem(developer_name)
-                    description_item = QTableWidgetItem(task.description)
-                    status_item = QTableWidgetItem(task.status)
-                    hours_item = QTableWidgetItem(str(task.hours_worked))
-                    created_at = getattr(task, 'created_at', '')
-                    created_item = QTableWidgetItem(created_at)
+                    description_item = QTableWidgetItem(task.description or '')
+                    status_item = QTableWidgetItem(task.status or '')
+                    hours_item = QTableWidgetItem(str(task.hours_worked or 0))
+                    created_at = getattr(task, 'created_at', None) or ''
+                    created_item = QTableWidgetItem(str(created_at))
 
                     # Сохраняем ID проекта и разработчика в пользовательских данных
                     id_item.setData(Qt.UserRole, task.id)
@@ -245,6 +216,7 @@ class TasksTab(QWidget):
                     self.tasks_table.setItem(i, 6, created_item)
 
             apply_task_row_colors(self.tasks_table, status_col=4, num_cols=7)
+            unhide_all_rows(self.tasks_table)
         except Exception:
             pass
 
@@ -380,16 +352,9 @@ class TasksTab(QWidget):
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
 
     def refresh_data(self):
-        """
-        Обновление данных в таблице
-        """
-        # Загружаем проекты и разработчиков (для разработчика загрузятся только его проекты)
-        self.load_projects_and_developers()
-
-        # Загружаем задачи (для разработчика загрузятся только его задачи)
+        """Обновление данных в таблице."""
         self.load_tasks()
-
-        # Применяем фильтры
+        self.load_projects_and_developers()
         self.apply_filters()
 
     def export_to_csv(self):

@@ -11,7 +11,8 @@ from ui.dialogs.project_dialog import ProjectDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
 from ui.resources.icon_helper import get_icon
-from ui.resources.table_helper import configure_table, refresh_table_theme
+from ui.resources.table_helper import configure_table, refresh_table_theme, unhide_all_rows
+from ui.resources.combo_helper import reload_combo
 
 
 class ProjectsTab(QWidget):
@@ -46,6 +47,7 @@ class ProjectsTab(QWidget):
         self.client_combo = QComboBox()
         self.client_combo.setMinimumWidth(160)
         self.client_combo.addItem("Все", "")
+        self.client_combo.currentIndexChanged.connect(self.apply_filters)
 
         date_label = QLabel("Дедлайн:")
         self.date_from = QDateEdit()
@@ -157,36 +159,19 @@ class ProjectsTab(QWidget):
                 self.projects_table.setItem(row, 5, status_item)
 
             refresh_table_theme(self.projects_table)
+            unhide_all_rows(self.projects_table)
 
-            # Обновление списка клиентов для фильтра
             self.update_client_filter(projects)
 
     def update_client_filter(self, projects):
-        """
-        Обновление списка клиентов для фильтра
-        """
-        # Сохранение текущего выбора
-        current_client = self.client_combo.currentData()
-
-        # Очистка комбобокса
-        self.client_combo.clear()
-        self.client_combo.addItem("Все", "")
-
-        # Получение уникальных клиентов
-        clients = set()
-        for project in projects:
-            if project.client:
-                clients.add(project.client)
-
-        # Добавление клиентов в комбобокс
-        for client in sorted(clients):
-            self.client_combo.addItem(client, client)
-
-        # Восстановление выбора
-        if current_client:
-            index = self.client_combo.findData(current_client)
-            if index >= 0:
-                self.client_combo.setCurrentIndex(index)
+        """Обновление списка клиентов для фильтра."""
+        clients = sorted({p.client for p in projects if p.client})
+        reload_combo(
+            self.client_combo,
+            [(client, client) for client in clients],
+            first_label='Все',
+            first_data='',
+        )
 
     def apply_filters(self):
         """Применение фильтров к таблице."""

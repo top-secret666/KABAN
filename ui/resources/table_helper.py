@@ -89,3 +89,11 @@ def refresh_all_tables(root):
             )
         else:
             refresh_table_theme(table)
+
+
+def unhide_all_rows(table: QTableWidget):
+    """Сбрасывает скрытие строк после полной перезагрузки таблицы."""
+    if table is None:
+        return
+    for row in range(table.rowCount()):
+        table.setRowHidden(row, False)

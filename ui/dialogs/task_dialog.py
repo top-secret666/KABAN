@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QFormLayout, QMessageBox, QComboBox, QTextEdit, QLin
 from PyQt5.QtGui import QDoubleValidator
 
 from controllers import TaskController, ProjectController, DeveloperController
+from ui.resources.combo_helper import reload_combo
 from ui.dialogs.base_dialog import BaseDialog
 from ui.resources.icon_helper import get_icon
 
@@ -79,14 +80,18 @@ class TaskDialog(BaseDialog):
     def _load_projects(self):
         result = self.project_controller.get_all_projects()
         if result['success']:
-            for project in result['data']:
-                self.project_combo.addItem(project.name, project.id)
+            reload_combo(
+                self.project_combo,
+                [(project.name, project.id) for project in result['data']],
+            )
 
     def _load_developers(self):
         result = self.developer_controller.get_all_developers()
         if result['success']:
-            for developer in result['data']:
-                self.developer_combo.addItem(developer.full_name, developer.id)
+            reload_combo(
+                self.developer_combo,
+                [(developer.full_name, developer.id) for developer in result['data']],
+            )
 
     def accept(self):
         if not self.description_input.toPlainText().strip():
