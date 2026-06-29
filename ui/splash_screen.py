@@ -1,95 +1,114 @@
-from PyQt5.QtWidgets import QSplashScreen, QProgressBar, QLabel, QVBoxLayout, QWidget
-from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QProgressBar, QFrame
+from PyQt5.QtGui import QFont, QPixmap, QColor
 from PyQt5.QtCore import Qt, QTimer
 
-class SplashScreen(QSplashScreen):
-    """
-    Заставка при загрузке приложения
-    """
+from ui.resources.styles import PRIMARY_COLOR, PRIMARY_DARK, TEXT_WHITE, BG_CARD
+
+
+class SplashScreen(QWidget):
+    """Заставка при загрузке в стиле Bitrix24."""
+
     def __init__(self):
-        # Создаем пиксмап для заставки
-        pixmap = QPixmap('ui/resources/icons/app_icon.png')
-        super().__init__(pixmap)
-        
-        # Создаем виджет для размещения элементов
-        self.widget = QWidget(self)
-        layout = QVBoxLayout(self.widget)
-        layout.setContentsMargins(20, pixmap.height() - 150, 20, 20)
-        
-        # Добавляем название приложения
-        self.title_label = QLabel("KABAN:manager")
-        self.title_label.setFont(QFont('Arial', 18, QFont.Bold))
-        self.title_label.setStyleSheet("color: white;")
+        super().__init__()
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setFixedSize(480, 320)
+        self._build()
+        self._center()
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_progress)
+        self.progress_value = 0
+        self.loading_messages = [
+            'Инициализация приложения...',
+            'Подключение к базе данных...',
+            'Загрузка компонентов интерфейса...',
+            'Проверка уведомлений...',
+            'Загрузка настроек...',
+            'Подготовка рабочего пространства...',
+            'Почти готово...',
+        ]
+
+    def _center(self):
+        from PyQt5.QtWidgets import QApplication
+        screen = QApplication.primaryScreen().geometry()
+        self.move(
+            (screen.width() - self.width()) // 2,
+            (screen.height() - self.height()) // 2,
+        )
+
+    def _build(self):
+        self.setStyleSheet(f"""
+            QWidget {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 {PRIMARY_COLOR}, stop:0.6 {PRIMARY_DARK}, stop:1 #1A8FB5);
+                border-radius: 12px;
+            }}
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(40, 40, 40, 36)
+        layout.setSpacing(12)
+
+        logo = QLabel()
+        pix = QPixmap('ui/resources/icons/logo.png')
+        if not pix.isNull():
+            logo.setPixmap(pix.scaled(72, 72, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        logo.setAlignment(Qt.AlignCenter)
+        logo.setStyleSheet('background: transparent; border: none;')
+        layout.addWidget(logo)
+
+        self.title_label = QLabel('KABAN:manager')
+        self.title_label.setFont(QFont('Segoe UI', 22, QFont.Bold))
+        self.title_label.setStyleSheet(f'color: {TEXT_WHITE}; background: transparent; border: none;')
         self.title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.title_label)
-        
-        # Добавляем статус загрузки
-        self.status_label = QLabel("Загрузка...")
-        self.status_label.setFont(QFont('Arial', 10))
-        self.status_label.setStyleSheet("color: white;")
+
+        self.status_label = QLabel('Загрузка...')
+        self.status_label.setFont(QFont('Segoe UI', 10))
+        self.status_label.setStyleSheet('color: rgba(255,255,255,0.85); background: transparent; border: none;')
         self.status_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.status_label)
-        
-        # Добавляем прогресс-бар
+
+        layout.addSpacing(8)
+
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
         self.progress_bar.setTextVisible(False)
-        self.progress_bar.setStyleSheet("""
-            QProgressBar {
-                border: 1px solid white;
-                border-radius: 5px;
-                background-color: transparent;
-                height: 10px;
-            }
-            QProgressBar::chunk {
-                background-color: white;
-                border-radius: 5px;
-            }
+        self.progress_bar.setFixedHeight(4)
+        self.progress_bar.setStyleSheet(f"""
+            QProgressBar {{
+                border: none;
+                border-radius: 2px;
+                background-color: rgba(255,255,255,0.25);
+            }}
+            QProgressBar::chunk {{
+                background-color: {TEXT_WHITE};
+                border-radius: 2px;
+            }}
         """)
         layout.addWidget(self.progress_bar)
-        
-        # Добавляем версию
-        self.version_label = QLabel("Версия 1.0.0")
-        self.version_label.setFont(QFont('Arial', 8))
-        self.version_label.setStyleSheet("color: white;")
-        self.version_label.setAlignment(Qt.AlignRight)
+
+        layout.addStretch()
+
+        self.version_label = QLabel('Версия 1.0.0')
+        self.version_label.setFont(QFont('Segoe UI', 9))
+        self.version_label.setStyleSheet('color: rgba(255,255,255,0.6); background: transparent; border: none;')
+        self.version_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.version_label)
-        
-        # Настраиваем таймер для имитации загрузки
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_progress)
-        self.progress_value = 0
-        
-        # Список сообщений о загрузке
-        self.loading_messages = [
-            "Инициализация приложения...",
-            "Подключение к базе данных...",
-            "Загрузка компонентов интерфейса...",
-            "Проверка обновлений...",
-            "Загрузка пользовательских настроек...",
-            "Подготовка рабочего пространства...",
-            "Почти готово..."
-        ]
-    
+
     def start_progress(self):
-        """
-        Запуск имитации загрузки
-        """
-        self.timer.start(100)  # Обновление каждые 100 мс
-    
+        self.timer.start(100)
+
     def update_progress(self):
-        """
-        Обновление прогресса загрузки
-        """
         self.progress_value += 1
         self.progress_bar.setValue(self.progress_value)
-        
-        # Обновляем сообщение о загрузке
         message_index = min(len(self.loading_messages) - 1, self.progress_value // 15)
         self.status_label.setText(self.loading_messages[message_index])
-        
-        # Если достигли 100%, останавливаем таймер
         if self.progress_value >= 100:
             self.timer.stop()
-            self.close()
+
+    def show(self):
+        super().show()
+        self.raise_()
+        self.activateWindow()

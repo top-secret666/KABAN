@@ -334,14 +334,9 @@ class DashboardTab(QWidget):
         return board_frame
 
     def show_all_tasks(self):
-        parent = self.parent()
-        if parent:
-            tab_widget = parent.parent()
-            if isinstance(tab_widget, QTabWidget):
-                for i in range(tab_widget.count()):
-                    if tab_widget.tabText(i) == 'Задачи':
-                        tab_widget.setCurrentIndex(i)
-                        break
+        window = self.window()
+        if hasattr(window, '_switch_to_key'):
+            window._switch_to_key('tasks')
 
     def refresh_data(self):
         try:
@@ -367,7 +362,7 @@ class DashboardTab(QWidget):
         frame = QFrame()
         frame.setFrameShape(QFrame.StyledPanel)
         frame.setFrameShadow(QFrame.Raised)
-        frame.setStyleSheet("QFrame { background-color: white; border-radius: 8px; }")
+        frame.setObjectName('notifications_panel')
 
         layout = QVBoxLayout(frame)
 

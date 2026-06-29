@@ -30,7 +30,7 @@ class LoginWindow(QDialog):
         self.setStyleSheet(f"""
             QDialog {{
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 {PRIMARY_COLOR}, stop:0.5 #4A6CF7, stop:1 #6C5CE7);
+                    stop:0 {PRIMARY_COLOR}, stop:0.5 #4AD4F5, stop:1 {PRIMARY_DARK});
             }}
         """)
 
