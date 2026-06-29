@@ -1,5 +1,4 @@
-from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QFormLayout, QMessageBox,
-                             QComboBox, QTextEdit, QLineEdit, QPushButton)
+from PyQt5.QtWidgets import QFormLayout, QMessageBox, QComboBox, QTextEdit, QLineEdit, QPushButton
 from PyQt5.QtGui import QDoubleValidator
 
 from controllers import TaskController, ProjectController, DeveloperController
@@ -8,8 +7,6 @@ from ui.resources.icon_helper import get_icon
 
 
 class TaskDialog(BaseDialog):
-    """Диалог добавления/редактирования задачи."""
-
     def __init__(self, parent=None, task=None):
         self.task = task
         self.task_controller = TaskController()
@@ -18,17 +15,12 @@ class TaskDialog(BaseDialog):
         title = 'Редактирование задачи' if task else 'Новая задача'
         super().__init__(parent, title)
         self.setWindowIcon(get_icon('task'))
-        self.setMinimumHeight(420)
+        self.setMinimumHeight(460)
         self._build()
 
     def _build(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 20, 24, 20)
-        layout.setSpacing(16)
-
         form = QFormLayout()
         form.setSpacing(12)
-
         self.project_combo = QComboBox()
         self._load_projects()
         self.developer_combo = QComboBox()
@@ -44,25 +36,21 @@ class TaskDialog(BaseDialog):
         self.hours_input = QLineEdit()
         self.hours_input.setPlaceholderText('0')
         self.hours_input.setValidator(QDoubleValidator(0, 1000, 2))
-
         form.addRow('Проект *', self.project_combo)
         form.addRow('Разработчик *', self.developer_combo)
         form.addRow('Описание *', self.description_input)
         form.addRow('Статус *', self.status_combo)
         form.addRow('Часы', self.hours_input)
-        layout.addLayout(form)
+        self.body_layout.addLayout(form)
 
-        buttons = QHBoxLayout()
-        buttons.addStretch()
         save_btn = QPushButton('Сохранить')
         save_btn.setIcon(get_icon('save'))
         save_btn.clicked.connect(self.accept)
         cancel_btn = QPushButton('Отмена')
         cancel_btn.setObjectName('flat')
         cancel_btn.clicked.connect(self.reject)
-        buttons.addWidget(save_btn)
-        buttons.addWidget(cancel_btn)
-        layout.addLayout(buttons)
+        self.add_footer_button(cancel_btn)
+        self.add_footer_button(save_btn)
 
         if self.task:
             pi = self.project_combo.findData(self.task.project_id)
