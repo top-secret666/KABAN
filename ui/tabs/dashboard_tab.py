@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-                             QFrame, QScrollArea, QSizePolicy, QGridLayout, QTabWidget,
-                             QGraphicsDropShadowEffect, QSpacerItem, QMessageBox)
-from PyQt5.QtGui import QFont, QIcon, QColor, QPainter, QPainterPath, QBrush, QPen
-from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve
+                             QFrame, QScrollArea, QSizePolicy, QMessageBox,
+                             QGraphicsDropShadowEffect)
+from PyQt5.QtGui import QFont, QColor
+from PyQt5.QtCore import Qt
 
 from controllers import ProjectController, TaskController, DeveloperController, NotificationController
 from ui.dialogs.task_dialog import TaskDialog
@@ -10,13 +10,11 @@ from ui.resources.icon_helper import get_icon
 from ui.resources.styles import (
     STATUS_NEW, STATUS_NEW_BG, STATUS_PROGRESS, STATUS_PROGRESS_BG,
     STATUS_REVIEW, STATUS_REVIEW_BG, STATUS_DONE, STATUS_DONE_BG,
-    PRIMARY_COLOR, PRIMARY_LIGHT, TEXT_PRIMARY, TEXT_SECONDARY,
-    BG_MAIN, BG_CARD, BORDER, BORDER_LIGHT, ACCENT
+    PRIMARY_COLOR, TEXT_PRIMARY, TEXT_SECONDARY, BG_MAIN,
 )
 
 
 class KanbanCard(QFrame):
-    """Карточка задачи в стиле Bitrix24"""
     def __init__(self, task, status_color, parent=None):
         super().__init__(parent)
         self.task = task
@@ -35,20 +33,17 @@ class KanbanCard(QFrame):
         layout.setContentsMargins(14, 12, 14, 12)
         layout.setSpacing(6)
 
-        # Верхняя строка: проект
         project_name = getattr(task, 'project_name', 'Проект')
         project_lbl = QLabel(project_name)
         project_lbl.setObjectName("card_project")
         layout.addWidget(project_lbl)
 
-        # Описание задачи
         desc = task.description if len(task.description) <= 80 else task.description[:77] + '...'
         title_lbl = QLabel(desc)
         title_lbl.setObjectName("card_title")
         title_lbl.setWordWrap(True)
         layout.addWidget(title_lbl)
 
-        # Нижняя строка: разработчик + часы
         bottom = QHBoxLayout()
         bottom.setSpacing(8)
 
@@ -66,7 +61,6 @@ class KanbanCard(QFrame):
 
         layout.addLayout(bottom)
 
-        # Дата
         date_val = getattr(task, 'updated_at', '') or getattr(task, 'created_at', '')
         if date_val:
             date_short = str(date_val)[:10]
@@ -76,7 +70,6 @@ class KanbanCard(QFrame):
 
 
 class KanbanColumn(QFrame):
-    """Колонка Kanban-доски в стиле Bitrix24"""
     def __init__(self, title, tasks_list, color, bg_color, object_suffix,
                  on_add_task=None, parent=None):
         super().__init__(parent)
@@ -90,7 +83,6 @@ class KanbanColumn(QFrame):
         layout.setContentsMargins(12, 14, 12, 14)
         layout.setSpacing(10)
 
-        # ─── Header колонки ───
         header = QHBoxLayout()
         header.setSpacing(8)
 
@@ -113,14 +105,12 @@ class KanbanColumn(QFrame):
 
         layout.addLayout(header)
 
-        # Разделитель
         sep = QFrame()
         sep.setFrameShape(QFrame.HLine)
         sep.setStyleSheet(f"background-color: {color}; max-height: 2px; border: none; border-radius: 1px;")
         sep.setFixedHeight(2)
         layout.addWidget(sep)
 
-        # ─── Скролл с карточками ───
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.NoFrame)
@@ -151,7 +141,6 @@ class KanbanColumn(QFrame):
 
 
 class StatCard(QFrame):
-    """Карточка статистики."""
 
     def __init__(self, title, value, color, icon_text="", subtitle="", parent=None):
         super().__init__(parent)
@@ -207,7 +196,6 @@ class StatCard(QFrame):
 
 
 class DashboardTab(QWidget):
-    """Вкладка Дашборд — Kanban-доска в стиле Bitrix24"""
 
     KANBAN_STATUSES = [
         {'key': 'новая',       'title': 'Новые',       'color': STATUS_NEW,      'bg': STATUS_NEW_BG,      'suffix': 'new'},

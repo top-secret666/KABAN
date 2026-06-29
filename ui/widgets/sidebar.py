@@ -156,6 +156,9 @@ class Sidebar(QFrame):
     def item_keys(self):
         return [item[0] for item in self._items]
 
+    def item_labels(self):
+        return [item[1] for item in self._items]
+
     def refresh_theme(self):
         from ui.resources.styles import TEXT_WHITE, SIDEBAR_TEXT_DIM, PRIMARY_COLOR
         for lbl, color in (

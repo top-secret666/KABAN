@@ -1,8 +1,7 @@
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
-                            QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
+                            QTableWidget, QTableWidgetItem, QHeaderView,
                             QLineEdit, QComboBox, QMessageBox, QFileDialog)
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt
 
 from controllers import TaskController, ProjectController, DeveloperController, ExportController
 from ui.dialogs.task_dialog import TaskDialog
@@ -12,10 +11,8 @@ from ui.resources.icon_helper import get_icon
 from ui.resources.table_helper import configure_table, apply_task_row_colors, unhide_all_rows
 from ui.resources.combo_helper import reload_combo
 
+
 class TasksTab(QWidget):
-    """
-    Вкладка "Задачи" - управление задачами
-    """
     def __init__(self, user):
         super().__init__()
         self.user = user
@@ -26,7 +23,6 @@ class TasksTab(QWidget):
         self.init_ui()
 
         if self.user.role == 'developer':
-            # Скрываем фильтр по разработчикам
             if hasattr(self, 'developer_label'):
                 self.developer_label.setVisible(False)
             if hasattr(self, 'developer_combo'):
@@ -74,8 +70,7 @@ class TasksTab(QWidget):
             fl.addWidget(w)
         fl.addStretch()
         main_layout.addWidget(filter_panel)
-        
-        # Таблица задач
+
         self.tasks_table = QTableWidget()
         configure_table(self.tasks_table)
         self.tasks_table.setProperty('task_status_col', 4)
@@ -87,10 +82,8 @@ class TasksTab(QWidget):
         self.tasks_table.doubleClicked.connect(self.edit_item)
         
         main_layout.addWidget(self.tasks_table)
-        
-        # Панель кнопок
+
         buttons_layout = QHBoxLayout()
-        
         self.add_button = QPushButton("Добавить")
         self.add_button.setIcon(get_icon('add'))
         self.add_button.clicked.connect(self.add_item)
@@ -120,13 +113,11 @@ class TasksTab(QWidget):
         buttons_layout.addWidget(self.export_button)
         
         main_layout.addLayout(buttons_layout)
-        
-        # Загрузка данных
+
         self.load_projects_and_developers()
         self.load_tasks()
 
     def load_projects_and_developers(self):
-        """Загрузка списка проектов и разработчиков для фильтров."""
         if self.user and self.user.role == 'developer':
             developer_result = self.developer_controller.get_developer_by_user_id(self.user.id)
             if developer_result['success'] and developer_result['data']:

@@ -1,12 +1,8 @@
-from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel, QWidget
+from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QLabel
 from PyQt5.QtGui import QFont
-from PyQt5.QtCore import Qt
-
-from ui.resources.styles import TEXT_PRIMARY, TEXT_SECONDARY, BG_CARD, BORDER
 
 
 class PageHeader(QFrame):
-    """Верхняя полоса страницы в стиле Bitrix24."""
 
     def __init__(self, title, subtitle='', parent=None):
         super().__init__(parent)
@@ -42,7 +38,6 @@ class PageHeader(QFrame):
 
 
 class FilterPanel(QFrame):
-    """Панель фильтров в белой карточке."""
 
     def __init__(self, parent=None):
         super().__init__(parent)

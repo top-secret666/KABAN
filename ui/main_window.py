@@ -20,7 +20,6 @@ from ui.dialogs.about_dialog import AboutDialog
 
 
 class MainWindow(QMainWindow):
-    """Главное окно приложения — layout в стиле Bitrix24."""
 
     def __init__(self, user):
         super().__init__()
@@ -102,7 +101,6 @@ class MainWindow(QMainWindow):
 
     @property
     def tab_widget(self):
-        """Совместимость с кодом, который ищет tab_widget (дашборд)."""
         return _TabWidgetProxy(self)
 
     def _current_tab(self):
@@ -283,8 +281,6 @@ class MainWindow(QMainWindow):
 
 
 class _TabWidgetProxy:
-    """Прокси для совместимости dashboard_tab.show_all_tasks."""
-
     def __init__(self, main_window):
         self._mw = main_window
 
@@ -292,10 +288,9 @@ class _TabWidgetProxy:
         return self._mw.stack.count()
 
     def tabText(self, index):
-        keys = self._mw.sidebar.item_keys()
-        labels = dict(Sidebar._ALL_ITEMS)
-        if index < len(keys):
-            return labels.get(keys[index], ('', '', ''))[2]
+        labels = self._mw.sidebar.item_labels()
+        if index < len(labels):
+            return labels[index]
         return ''
 
     def setCurrentIndex(self, index):
