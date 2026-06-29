@@ -81,7 +81,6 @@ class ProjectsTab(QWidget):
 
         self.add_button = QPushButton("Добавить")
         self.add_button.setIcon(get_icon('add'))
-        print("Подключаем обработчик к кнопке Добавить")
         self.add_button.clicked.connect(self.add_item)
 
         self.edit_button = QPushButton("Редактировать")
@@ -131,26 +130,15 @@ class ProjectsTab(QWidget):
 
             if developer_result['success'] and developer_result['data']:
                 developer = developer_result['data']
-                print(f"Найден разработчик для пользователя {self.user.id}: {developer.full_name} (ID: {developer.id})")
-                # Теперь используем ID разработчика для получения проектов
                 result = self.project_controller.get_projects_by_developer(developer.id)
             else:
-                # Если разработчик не найден, показываем пустой список
-                print(f"Разработчик для пользователя {self.user.id} не найден")
                 result = {'success': True, 'data': []}
         else:
-            # Для менеджеров и администраторов показываем все проекты
             result = self.project_controller.get_all_projects()
-
-        print(f"Результат запроса проектов: {result}")
 
         if result['success']:
             projects = result['data']
-            print(f"Количество проектов: {len(projects)}")
-            for project in projects:
-                print(f"ID: {project.id}, Название: {project.name}, Клиент: {project.client}, Бюджет: {project.budget}")
 
-            # Заполнение таблицы
             for row, project in enumerate(projects):
                 self.projects_table.insertRow(row)
 
@@ -159,7 +147,6 @@ class ProjectsTab(QWidget):
                 client_item = QTableWidgetItem(project.client)
                 deadline_item = QTableWidgetItem(project.deadline if project.deadline else "")
                 budget_item = QTableWidgetItem(str(project.budget))
-                print(f"Проект {project.id} статус: {project.status}")
                 status_item = QTableWidgetItem(project.status)
 
                 self.projects_table.setItem(row, 0, id_item)
@@ -202,14 +189,9 @@ class ProjectsTab(QWidget):
                 self.client_combo.setCurrentIndex(index)
 
     def apply_filters(self):
-        """
-        Применение фильтров к таблице
-        """
-        print("Применение фильтров к проектам")
+        """Применение фильтров к таблице."""
         search_text = self.search_input.text().lower()
         client = self.client_combo.currentData()
-
-        # Получаем объекты QDate вместо строк
         date_from_obj = self.date_from.date()
         date_to_obj = self.date_to.date()
 
@@ -218,36 +200,20 @@ class ProjectsTab(QWidget):
             proj_client = self.projects_table.item(row, 2).text()
             deadline = self.projects_table.item(row, 3).text()
 
-            # Проверка соответствия фильтрам
             name_match = search_text in name.lower() or search_text in proj_client.lower()
             client_match = not client or proj_client == client
 
-            # Проверка даты
             date_match = True
             if deadline:
                 try:
-                    # Преобразуем строку дедлайна в объект QDate
                     deadline_date = QDate.fromString(deadline, "yyyy-MM-dd")
                     if deadline_date.isValid():
                         date_match = date_from_obj <= deadline_date <= date_to_obj
-                        print(
-                            f"Дата проекта: {deadline}, диапазон: {date_from_obj.toString('yyyy-MM-dd')} - {date_to_obj.toString('yyyy-MM-dd')}, результат: {date_match}")
-                except Exception as e:
-                    print(f"Ошибка при проверке даты: {e}")
-                    date_match = True  # В случае ошибки не фильтруем по дате
+                except Exception:
+                    date_match = True
 
-            # Отображение/скрытие строки
             should_show = name_match and client_match and date_match
             self.projects_table.setRowHidden(row, not should_show)
-            print(f"Проект {row} {'показан' if should_show else 'скрыт'}")
-
-        # Подсчет видимых строк после применения всех фильтров
-        visible_rows = 0
-        for row in range(self.projects_table.rowCount()):
-            if not self.projects_table.isRowHidden(row):
-                visible_rows += 1
-
-        print(f"Видимых проектов после фильтрации: {visible_rows}")
 
     def add_item(self):
         """
@@ -277,14 +243,6 @@ class ProjectsTab(QWidget):
                     QMessageBox.critical(self, "Ошибка", result['error_message'])
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Ошибка при создании диалога: {str(e)}")
-            import traceback
-            traceback.print_exc()
-
-    def on_dialog_rejected(self):
-        """
-        Обработка отклонения диалога
-        """
-        print("Диалог отклонен")
 
     def edit_item(self):
         """

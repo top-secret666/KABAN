@@ -132,7 +132,6 @@ class Task:
             return None
 
         except Exception as e:
-            print(f"Ошибка при получении задачи: {e}")
             return None
 
     @classmethod
@@ -146,7 +145,6 @@ class Task:
             return [cls.from_dict(data) for data in data_list]
 
         except Exception as e:
-            print(f"Ошибка при получении задач: {e}")
             return []
 
     @classmethod
@@ -163,7 +161,6 @@ class Task:
             return [cls.from_dict(data) for data in data_list]
 
         except Exception as e:
-            print(f"Ошибка при получении задач: {e}")
             return []
 
     @classmethod
@@ -180,7 +177,6 @@ class Task:
             return [cls.from_dict(data) for data in data_list]
 
         except Exception as e:
-            print(f"Ошибка при получении задач: {e}")
             return []
 
     @classmethod
@@ -197,7 +193,6 @@ class Task:
             return [cls.from_dict(data) for data in data_list]
 
         except Exception as e:
-            print(f"Ошибка при получении задач: {e}")
             return []
 
     def get_project(self):

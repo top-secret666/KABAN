@@ -11,13 +11,10 @@ class DeveloperDialog(QDialog):
     """
 
     def __init__(self, parent=None, developer=None):
-        print("Инициализация DeveloperDialog")
         super().__init__(parent)
         self.developer = developer
         self.developer_controller = DeveloperController()
-        print("Контроллер создан")
         self.init_ui()
-        print("UI инициализирован")
     
     def init_ui(self):
         """

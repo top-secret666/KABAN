@@ -207,25 +207,16 @@ class TasksTab(QWidget):
 
                 if developer_result['success'] and developer_result['data']:
                     developer = developer_result['data']
-                    print(f"Найден разработчик с ID {developer.id} для пользователя {self.user.id}")
-                    # Теперь используем ID разработчика для получения задач
                     result = self.task_controller.get_tasks_by_developer(developer.id)
                 else:
-                    # Если разработчик не найден, показываем пустой список
-                    print(f"Разработчик для пользователя {self.user.id} не найден")
                     result = {'success': True, 'data': []}
             else:
-                # Для менеджеров и администраторов показываем все задачи
                 result = self.task_controller.get_all_tasks()
-
-            print(f"Результат запроса задач: {result}")
 
             if result['success']:
                 tasks = result['data']
 
                 for i, task in enumerate(tasks):
-                    print(f"Задача {i + 1}: ID={task.id}, Описание={task.description}, Статус={task.status}")
-
                     self.tasks_table.insertRow(i)
 
                     # Заполнение ячеек таблицы
@@ -254,8 +245,8 @@ class TasksTab(QWidget):
                     self.tasks_table.setItem(i, 6, created_item)
 
             apply_task_row_colors(self.tasks_table, status_col=4, num_cols=7)
-        except Exception as e:
-            print(f"Ошибка при обновлении таблицы: {e}")
+        except Exception:
+            pass
 
 
     def apply_filters(self):
@@ -266,8 +257,6 @@ class TasksTab(QWidget):
         project_id = self.project_combo.currentData()
         developer_id = self.developer_combo.currentData()
         status = self.status_combo.currentData()
-        
-        print(f"Фильтрация: текст='{search_text}', проект ID={project_id}, разработчик ID={developer_id}, статус='{status}'")
 
         for row in range(self.tasks_table.rowCount()):
             # Получаем данные из строки таблицы
@@ -290,8 +279,6 @@ class TasksTab(QWidget):
             # Отображение/скрытие строки
             should_show = description_match and project_match and developer_match and status_match
             self.tasks_table.setRowHidden(row, not should_show)
-
-            print(f"Задача {task_id_item.text()}: description_match={description_match}, project_match={project_match}, developer_match={developer_match}, status_match={status_match}, показана={should_show}")
 
     def add_item(self):
         """

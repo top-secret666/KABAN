@@ -529,10 +529,8 @@ class DashboardTab(QWidget):
             self.developer_controller = DeveloperController()
             self.notification_controller = NotificationController()
             self._reload_dashboard()
-        except Exception as e:
-            import traceback
-            print(f"Ошибка при обновлении дашборда: {str(e)}")
-            print(traceback.format_exc())
+        except Exception:
+            pass
 
     def create_notifications_widget(self):
         frame = QFrame()

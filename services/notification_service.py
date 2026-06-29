@@ -62,7 +62,6 @@ class NotificationService(BaseService):
             Notification: Созданное уведомление
         """
         try:
-            print(f"Создание уведомления: {title}")
 
             # Если user_id не указан, отправляем уведомление всем пользователям (NULL)
             notification = Notification(
@@ -78,13 +77,10 @@ class NotificationService(BaseService):
 
             success, error = notification.save()
             if not success:
-                print(f"Ошибка при сохранении уведомления: {error}")
                 raise BusinessException(f"Не удалось создать уведомление: {error}")
 
-            print(f"Уведомление успешно создано с ID: {notification.id}")
             return notification
         except Exception as e:
-            print(f"Исключение при создании уведомления: {str(e)}")
             if isinstance(e, (BusinessException, ValidationException, DatabaseException)):
                 raise e
             raise BusinessException(f"Ошибка при создании уведомления: {str(e)}")
@@ -183,7 +179,6 @@ class NotificationService(BaseService):
         """
         try:
             today = datetime.now().strftime('%Y-%m-%d')
-            print(f"Проверка просроченных проектов. Текущая дата: {today}")
 
             # Упрощенный запрос без проверки существующих уведомлений
             query = """
@@ -194,7 +189,6 @@ class NotificationService(BaseService):
             cursor = self.execute_query(query, [today])
 
             projects = cursor.fetchall()
-            print(f"Найдено просроченных проектов: {len(projects)}")
 
             count = 0
             for row in projects:
@@ -205,7 +199,6 @@ class NotificationService(BaseService):
                 if self._notification_exists(project_id, 'project_overdue'):
                     continue
 
-                print(f"Создание уведомления для просроченного проекта: {project_name} (ID: {project_id})")
 
                 # Создаем уведомление о просроченном проекте
                 notification = self.create_notification(
@@ -218,15 +211,9 @@ class NotificationService(BaseService):
 
                 if notification:
                     count += 1
-                    print(f"Уведомление создано успешно: {notification.id}")
-                else:
-                    print("Ошибка при создании уведомления")
 
             return count
-        except Exception as e:
-            import traceback
-            print(f"Ошибка при проверке просроченных проектов: {str(e)}")
-            print(traceback.format_exc())
+        except Exception:
             return 0
 
     def check_upcoming_deadlines(self, days=3):

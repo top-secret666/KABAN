@@ -13,12 +13,6 @@ class NotificationScheduler:
         """
         try:
             results = self.notification_service.run_all_checks()
-            print(f"Создано уведомлений: {results['total']}")
-            print(f"- Просроченные проекты: {results['overdue_projects']}")
-            print(f"- Приближающиеся дедлайны: {results['upcoming_deadlines']}")
-            print(f"- Неактивные задачи: {results['inactive_tasks']}")
-            print(f"- Предупреждения о бюджете: {results['budget_warnings']}")
             return results
         except Exception as e:
-            print(f"Ошибка при выполнении проверок уведомлений: {str(e)}")
             return {'total': 0}

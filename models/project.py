@@ -137,7 +137,6 @@ class Project:
             return None
 
         except Exception as e:
-            print(f"Ошибка при получении проекта: {e}")
             return None
 
     @classmethod
@@ -146,15 +145,8 @@ class Project:
         try:
             db_manager.execute("SELECT * FROM projects")
             data_list = db_manager.fetch_all()
-
-            # Отладочная информация
-            print("Данные из базы данных:")
-            for data in data_list:
-                print(f"ID: {data.get('id')}, Название: {data.get('name')}, Статус: {data.get('status')}")
-
             return [cls.from_dict(data) for data in data_list]
         except Exception as e:
-            print(f"Ошибка при получении проектов: {e}")
             return []
 
     @classmethod
@@ -171,7 +163,6 @@ class Project:
             return [cls.from_dict(data) for data in data_list]
 
         except Exception as e:
-            print(f"Ошибка при получении проектов: {e}")
             return []
 
     def get_tasks(self):
@@ -239,7 +230,6 @@ class Project:
             }
 
         except Exception as e:
-            print(f"Ошибка при получении прогресса проекта: {e}")
             return {
                 'total_tasks': 0,
                 'completed_tasks': 0,

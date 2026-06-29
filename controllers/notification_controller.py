@@ -17,10 +17,8 @@ class NotificationController(BaseController):
         """
         try:
             result = self.execute_service_method('get_all_notifications', limit, offset, only_unread)
-            print(f"Получено уведомлений: {len(result['data']) if result['success'] and 'data' in result else 0}")
             return result
         except Exception as e:
-            print(f"Ошибка при получении уведомлений: {str(e)}")
             return {'success': False, 'error': str(e), 'data': []}
 
     def get_notification_by_id(self, notification_id):

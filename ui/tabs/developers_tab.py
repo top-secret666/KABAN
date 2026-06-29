@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushBut
 from PyQt5.QtCore import Qt, QSize, QCoreApplication
 
 from controllers import DeveloperController, ExportController
-from ui.dialogs.developer_dialog import DeveloperDialog
 from ui.dialogs.new_developer_dialog import NewDeveloperDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
@@ -18,7 +17,6 @@ class DevelopersTab(QWidget):
     """
     def __init__(self, user):
         super().__init__()
-        print("DeveloperDialog инициализируется")
         self.user = user
         self.developer_controller = DeveloperController()
         self.export_controller = ExportController()
@@ -26,7 +24,6 @@ class DevelopersTab(QWidget):
 
     def init_ui(self):
         try:
-            print("Инициализация интерфейса DeveloperDialog")
             page = TabPage('Разработчики', 'Команда и ставки')
             outer = QVBoxLayout(self)
             outer.setContentsMargins(0, 0, 0, 0)
@@ -104,7 +101,6 @@ class DevelopersTab(QWidget):
             # Загрузка данных
             self.load_developers()
         except Exception as e:
-            print(f"Ошибка в init_ui: {e}")
             QMessageBox.critical(self, "Ошибка", f"Не удалось инициализировать диалог: {str(e)}")
 
     def load_developers(self):

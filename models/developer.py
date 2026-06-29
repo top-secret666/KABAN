@@ -106,7 +106,6 @@ class Developer:
             return None
 
         except Exception as e:
-            print(f"Ошибка при получении разработчика: {e}")
             return None
 
     @classmethod
@@ -120,7 +119,6 @@ class Developer:
             return [cls.from_dict(data) for data in data_list]
 
         except Exception as e:
-            print(f"Ошибка при получении разработчиков: {e}")
             return []
 
     @classmethod
@@ -137,7 +135,6 @@ class Developer:
             return [cls.from_dict(data) for data in data_list]
 
         except Exception as e:
-            print(f"Ошибка при получении разработчиков: {e}")
             return []
 
     def get_tasks(self):
@@ -168,7 +165,6 @@ class Developer:
             return total_hours * self.hourly_rate
 
         except Exception as e:
-            print(f"Ошибка при расчете зарплаты: {e}")
             return 0
 
     def __str__(self):
