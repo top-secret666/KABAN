@@ -80,13 +80,35 @@ QPushButton#sidebar_btn:checked {{
 
 def _page(p):
     return f"""
-QFrame#page_header {{ background-color: {p['bg_card']}; border-bottom: 1px solid {p['border']}; }}
-QLabel#page_title {{ color: {p['text_primary']}; background: transparent; border: none; }}
-QLabel#page_subtitle {{ color: {p['text_secondary']}; background: transparent; border: none; }}
-QFrame#filter_panel {{
-    background-color: {p['bg_card']}; border: 1px solid {p['border']}; border-radius: 8px;
+QFrame#page_header {{
+    background-color: {p['bg_card']};
+    border-bottom: 1px solid {p['border']};
 }}
-QWidget#page_content, QWidget#page_body {{ background-color: {p['bg_main']}; }}
+QLabel#page_title {{
+    color: {p['text_primary']}; background: transparent; border: none;
+    font-size: 18px; font-weight: 600;
+}}
+QLabel#page_subtitle {{
+    color: {p['text_secondary']}; background: transparent; border: none;
+    font-size: 11px;
+}}
+QFrame#filter_panel {{
+    background-color: {p['bg_card']};
+    border: 1px solid {p['border']};
+    border-radius: 10px;
+}}
+QFrame#filter_panel QLabel {{
+    color: {p['text_secondary']};
+    font-size: 12px;
+    font-weight: 500;
+}}
+QWidget#page_content, QWidget#page_body {{
+    background-color: {p['bg_main']};
+}}
+QScrollArea {{
+    background: transparent;
+    border: none;
+}}
 """
 
 
@@ -145,12 +167,17 @@ def _buttons(p):
     return f"""
 QPushButton {{
     background-color: {p['primary']}; color: {p['text_on_primary']};
-    border: none; border-radius: 6px; padding: 8px 20px;
-    font-size: 13px; font-weight: 600; font-family: {FONT_FAMILY}; min-height: 16px;
+    border: none; border-radius: 8px; padding: 9px 22px;
+    font-size: 13px; font-weight: 600; font-family: {FONT_FAMILY}; min-height: 18px;
 }}
 QPushButton:hover {{ background-color: {p['primary_dark']}; }}
 QPushButton:pressed {{ background-color: {p['primary_pressed']}; }}
 QPushButton:disabled {{ background-color: {p['border']}; color: {p['text_secondary']}; }}
+QPushButton#primary {{
+    background-color: {p['primary']}; color: {p['text_on_primary']};
+    padding: 9px 20px; border-radius: 8px; font-weight: 600;
+}}
+QPushButton#primary:hover {{ background-color: {p['primary_dark']}; }}
 QPushButton#success {{ background-color: {p['success']}; color: {p['text_primary']}; }}
 QPushButton#warning {{ background-color: {p['warning']}; color: {p['text_primary']}; }}
 QPushButton#error {{ background-color: {p['error']}; color: white; }}
@@ -176,15 +203,57 @@ QPushButton#kanban_add:hover {{
 def _tables(p):
     return f"""
 QTableWidget, QTableView, QTreeView {{
-    border: 1px solid {p['border']}; border-radius: 8px;
-    background-color: {p['bg_card']}; alternate-background-color: {p['table_alt']};
-    selection-background-color: {p['primary_light']}; selection-color: {p['text_primary']};
-    gridline-color: {p['border_light']}; font-size: 13px; color: {p['text_primary']};
+    border: 1px solid {p['border']};
+    border-radius: 10px;
+    background-color: {p['bg_card']};
+    alternate-background-color: {p['table_alt']};
+    selection-background-color: {p['primary']};
+    selection-color: {p['text_on_primary']};
+    gridline-color: transparent;
+    font-size: 13px;
+    color: {p['text_primary']};
+    outline: none;
+}}
+QTableWidget#data_table, QTableView#data_table {{
+    border: 1px solid {p['border']};
+    background-color: {p['bg_card']};
+}}
+QTableWidget::item, QTableView::item {{
+    padding: 10px 14px;
+    color: {p['text_primary']};
+    border: none;
+    border-bottom: 1px solid {p['border_light']};
+}}
+QTableWidget::item:alternate, QTableView::item:alternate {{
+    background-color: {p['table_alt']};
+    color: {p['text_primary']};
+}}
+QTableWidget::item:selected, QTableView::item:selected {{
+    background-color: {p['primary']};
+    color: {p['text_on_primary']};
+}}
+QTableWidget::item:hover, QTableView::item:hover {{
+    background-color: {p['primary_light']};
+    color: {p['text_primary']};
 }}
 QHeaderView::section {{
-    background-color: {p['table_header']}; padding: 10px 12px; border: none;
-    border-bottom: 2px solid {p['border']}; border-right: 1px solid {p['border_light']};
-    font-weight: 600; font-size: 12px; color: {p['text_secondary']};
+    background-color: {p['table_header']};
+    padding: 12px 14px;
+    border: none;
+    border-bottom: 2px solid {p['border']};
+    border-right: 1px solid {p['border_light']};
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: {p['text_secondary']};
+}}
+QHeaderView::section:last {{
+    border-right: none;
+}}
+QTableCornerButton::section {{
+    background-color: {p['table_header']};
+    border: none;
 }}
 """
 

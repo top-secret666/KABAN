@@ -195,7 +195,21 @@ def apply_theme(app, config=None):
     stylesheet = build_stylesheet(_current_palette)
     app.setStyleSheet(stylesheet)
     sync_styles_module(_current_palette)
+    refresh_ui_widgets(app)
     return _current_palette
+
+
+def refresh_ui_widgets(app=None):
+    """Обновляет виджеты с жёстко заданными цветами после смены темы."""
+    from PyQt5.QtWidgets import QApplication
+    app = app or QApplication.instance()
+    if not app:
+        return
+    from ui.resources.table_helper import refresh_all_tables
+    for widget in app.topLevelWidgets():
+        refresh_all_tables(widget)
+        if hasattr(widget, 'apply_theme') and widget.metaObject().className() == 'MainWindow':
+            widget.apply_theme()
 
 
 def current_palette():
