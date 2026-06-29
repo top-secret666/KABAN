@@ -248,54 +248,6 @@ class DevelopersTab(QWidget):
             import traceback
             traceback.print_exc()
 
-    def edit_item(self):
-        """
-        Редактирование выбранного разработчика
-        """
-        try:
-            # Получение выбранной строки
-            selected_rows = self.developers_table.selectedItems()
-            if not selected_rows:
-                QMessageBox.warning(self, "Предупреждение", "Выберите разработчика для редактирования")
-                return
-
-            # Получение ID выбранного разработчика
-            row = selected_rows[0].row()
-            developer_id = int(self.developers_table.item(row, 0).text())
-
-            # Получение данных разработчика
-            result = self.developer_controller.get_developer_by_id(developer_id)
-
-            if result['success']:
-                developer = result['data']
-
-                # Используем новый диалог
-                dialog = NewDeveloperDialog(self, developer)
-
-                # Отображаем диалог и ждем результат
-                if dialog.exec_():
-                    # Получение данных из диалога
-                    developer_data = {
-                        'full_name': dialog.name_input.text(),
-                        'position': dialog.position_combo.currentText(),
-                        'hourly_rate': float(dialog.rate_input.text())
-                    }
-
-                    # Обновление разработчика
-                    update_result = self.developer_controller.update_developer(developer_id, developer_data)
-
-                    if update_result['success']:
-                        QMessageBox.information(self, "Успех", "Разработчик успешно обновлен")
-                        self.refresh_data()
-                    else:
-                        QMessageBox.critical(self, "Ошибка", update_result['error_message'])
-            else:
-                QMessageBox.critical(self, "Ошибка", result['error_message'])
-        except Exception as e:
-            QMessageBox.critical(self, "Ошибка", f"Ошибка при редактировании: {str(e)}")
-            import traceback
-            traceback.print_exc()
-
     def delete_item(self):
         """
         Удаление выбранного разработчика

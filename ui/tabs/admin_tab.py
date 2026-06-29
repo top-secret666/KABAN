@@ -1,57 +1,50 @@
-from PyQt5.QtGui import QKeySequence, QFont
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget,
-                             QTableWidgetItem, QPushButton, QLabel, QMessageBox,
-                             QDialog, QFormLayout, QLineEdit, QComboBox, QCheckBox,
+                             QTableWidgetItem, QPushButton, QMessageBox,
+                             QFormLayout, QLineEdit, QComboBox, QCheckBox,
                              QInputDialog, QShortcut)
 
 from PyQt5.QtCore import Qt
 from controllers.auth_controller import AuthController
 from ui.widgets.tab_page import TabPage
 from ui.resources.icon_helper import get_icon
-from ui.resources.styles import GLOBAL_STYLE
+from ui.dialogs.base_dialog import BaseDialog
 
-class UserEditDialog(QDialog):
-    """
-    Диалог для добавления/редактирования пользователя
-    """
+
+class UserEditDialog(BaseDialog):
+    """Диалог добавления/редактирования пользователя."""
+
     def __init__(self, parent=None, user=None):
-        super().__init__(parent)
         self.user = user
         self.auth_controller = AuthController()
-        self.init_ui()
+        title = "Редактирование пользователя" if user else "Добавление пользователя"
+        super().__init__(parent, title)
+        self.setMinimumWidth(440)
+        self._build()
 
-    def init_ui(self):
-        self.setStyleSheet(GLOBAL_STYLE)
-        self.setWindowTitle("Редактирование пользователя" if self.user else "Добавление пользователя")
-        self.setMinimumWidth(400)
+    def _build(self):
+        layout = QFormLayout(self)
+        layout.setContentsMargins(24, 20, 24, 20)
+        layout.setSpacing(12)
 
-        layout = QFormLayout()
-
-        # Поля формы
         self.username_edit = QLineEdit()
         self.password_edit = QLineEdit()
         self.password_edit.setEchoMode(QLineEdit.Password)
         self.email_edit = QLineEdit()
         self.full_name_edit = QLineEdit()
-
         self.role_combo = QComboBox()
         self.role_combo.addItems(['admin', 'manager', 'developer'])
-
         self.is_active_check = QCheckBox()
         self.is_active_check.setChecked(True)
 
-        # Заполнение полей, если редактируем существующего пользователя
         if self.user:
             self.username_edit.setText(self.user.username)
             self.email_edit.setText(self.user.email)
             self.full_name_edit.setText(self.user.full_name)
             self.role_combo.setCurrentText(self.user.role)
             self.is_active_check.setChecked(self.user.is_active)
-
-            # Для существующего пользователя пароль не показываем
             self.password_edit.setPlaceholderText("Оставьте пустым, чтобы не менять")
 
-        # Добавление полей в форму
         layout.addRow("Имя пользователя:", self.username_edit)
         layout.addRow("Пароль:", self.password_edit)
         layout.addRow("Email:", self.email_edit)
@@ -59,19 +52,15 @@ class UserEditDialog(QDialog):
         layout.addRow("Роль:", self.role_combo)
         layout.addRow("Активен:", self.is_active_check)
 
-        # Кнопки
         button_layout = QHBoxLayout()
         self.save_button = QPushButton("Сохранить")
         self.cancel_button = QPushButton("Отмена")
-
+        self.cancel_button.setObjectName('flat')
         self.save_button.clicked.connect(self.save_user)
         self.cancel_button.clicked.connect(self.reject)
-
         button_layout.addWidget(self.save_button)
         button_layout.addWidget(self.cancel_button)
-
         layout.addRow("", button_layout)
-        self.setLayout(layout)
 
     def save_user(self):
         """
@@ -140,7 +129,6 @@ class AdminTab(QWidget):
         self.load_users()
 
     def init_ui(self):
-        self.setStyleSheet(GLOBAL_STYLE)
         page = TabPage('Администрирование', 'Управление пользователями системы')
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
