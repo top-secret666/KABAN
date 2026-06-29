@@ -328,6 +328,40 @@ class SettingsTab(QWidget):
         else:
             QMessageBox.critical(self, "Ошибка", result['error_message'])
 
+    def _on_bg_preset_changed(self):
+        preset = self.bg_preset_combo.currentData()
+        if preset == 'custom':
+            self.bg_color_button.setEnabled(True)
+        else:
+            self.bg_color_button.setEnabled(False)
+            color = BG_PRESETS.get(preset, '')
+            if color:
+                self.bg_color = QColor(color)
+                self.bg_color_button.setStyleSheet(
+                    f"background-color: {color}; border: 1px solid #888; border-radius: 4px;"
+                )
+
+    def _build_theme_config(self):
+        preset = self.bg_preset_combo.currentData()
+        bg_color = ''
+        if preset == 'custom':
+            bg_color = self.bg_color.name()
+        elif preset and preset != 'default':
+            bg_color = BG_PRESETS.get(preset, '')
+        return {
+            'theme': self.theme_combo.currentData(),
+            'accent': self.accent_color.name(),
+            'bg_main': bg_color,
+            'bg_preset': preset,
+            'font_size': self.font_size_spin.value(),
+        }
+
+    def _preview_theme(self):
+        from PyQt5.QtWidgets import QApplication
+        app = QApplication.instance()
+        if app:
+            apply_theme(app, self._build_theme_config())
+
     def choose_accent_color(self):
         """
         Выбор цвета акцента
