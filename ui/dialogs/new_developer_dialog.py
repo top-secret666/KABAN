@@ -1,26 +1,19 @@
-from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QFormLayout, QMessageBox,
-                             QLineEdit, QPushButton, QComboBox)
+from PyQt5.QtWidgets import QFormLayout, QMessageBox, QLineEdit, QPushButton, QComboBox
 
 from controllers import DeveloperController
 from ui.dialogs.base_dialog import BaseDialog
 
 
 class NewDeveloperDialog(BaseDialog):
-    """Диалог добавления/редактирования разработчика."""
-
     def __init__(self, parent=None, developer=None):
         self.developer = developer
         self.developer_controller = DeveloperController()
         title = 'Редактирование разработчика' if developer else 'Новый разработчик'
         super().__init__(parent, title)
-        self.setMinimumHeight(280)
+        self.setMinimumHeight(320)
         self._build()
 
     def _build(self):
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 20, 24, 20)
-        layout.setSpacing(16)
-
         form = QFormLayout()
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText('ФИО')
@@ -34,18 +27,15 @@ class NewDeveloperDialog(BaseDialog):
         form.addRow('ФИО *', self.name_input)
         form.addRow('Должность *', self.position_combo)
         form.addRow('Ставка *', self.rate_input)
-        layout.addLayout(form)
+        self.body_layout.addLayout(form)
 
-        buttons = QHBoxLayout()
-        buttons.addStretch()
         save_btn = QPushButton('Сохранить')
         save_btn.clicked.connect(self.validate_and_accept)
         cancel_btn = QPushButton('Отмена')
         cancel_btn.setObjectName('flat')
         cancel_btn.clicked.connect(self.reject)
-        buttons.addWidget(save_btn)
-        buttons.addWidget(cancel_btn)
-        layout.addLayout(buttons)
+        self.add_footer_button(cancel_btn)
+        self.add_footer_button(save_btn)
 
         if self.developer:
             self.name_input.setText(self.developer.full_name)
