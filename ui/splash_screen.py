@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QProgressBar, QFrame
 from PyQt5.QtGui import QFont, QPixmap, QColor
 from PyQt5.QtCore import Qt, QTimer
 
-from ui.resources.styles import PRIMARY_COLOR, PRIMARY_DARK, TEXT_WHITE, BG_CARD
+from ui.resources.theme_manager import current_palette, get_login_styles, get_config
 
 
 class SplashScreen(QWidget):
@@ -37,10 +37,12 @@ class SplashScreen(QWidget):
         )
 
     def _build(self):
+        ls = get_login_styles(get_config())
+        p = current_palette()
+
         self.setStyleSheet(f"""
             QWidget {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 {PRIMARY_COLOR}, stop:0.6 {PRIMARY_DARK}, stop:1 #1A8FB5);
+                background: {ls['gradient']};
                 border-radius: 12px;
             }}
         """)
@@ -59,7 +61,7 @@ class SplashScreen(QWidget):
 
         self.title_label = QLabel('KABAN:manager')
         self.title_label.setFont(QFont('Segoe UI', 22, QFont.Bold))
-        self.title_label.setStyleSheet(f'color: {TEXT_WHITE}; background: transparent; border: none;')
+        self.title_label.setStyleSheet(f'color: {p["text_white"]}; background: transparent; border: none;')
         self.title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.title_label)
 
@@ -83,7 +85,7 @@ class SplashScreen(QWidget):
                 background-color: rgba(255,255,255,0.25);
             }}
             QProgressBar::chunk {{
-                background-color: {TEXT_WHITE};
+                background-color: {p['text_white']};
                 border-radius: 2px;
             }}
         """)

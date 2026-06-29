@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QDialog, QLabel, QLineEdit, QPushButton, QVBoxLayou
 from PyQt5.QtGui import QPixmap, QIcon, QFont, QColor
 from PyQt5.QtCore import Qt
 
-from ui.resources.theme_manager import get_login_styles, get_config, current_palette
+from ui.resources.theme_manager import get_login_styles, get_config
 from controllers import AuthController
 
 
@@ -24,7 +24,6 @@ class RegisterWindow(QDialog):
         self.setWindowFlags(Qt.Dialog | Qt.WindowCloseButtonHint | Qt.MSWindowsFixedSizeDialogHint)
 
         ls = get_login_styles(get_config())
-        p = current_palette()
 
         self.setStyleSheet(f"QDialog {{ background: {ls['gradient']}; }}")
 
@@ -53,29 +52,29 @@ class RegisterWindow(QDialog):
         title = QLabel('Регистрация')
         title.setFont(QFont('Segoe UI', 20, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none; background: transparent;")
+        title.setStyleSheet(f"color: {ls['text_primary']}; border: none; background: transparent;")
         card_layout.addWidget(title)
 
         subtitle = QLabel('Создайте новый аккаунт')
         subtitle.setFont(QFont('Segoe UI', 11))
         subtitle.setAlignment(Qt.AlignCenter)
-        subtitle.setStyleSheet(f"color: {TEXT_SECONDARY}; border: none; margin-bottom: 8px;")
+        subtitle.setStyleSheet(f"color: {ls['text_secondary']}; border: none; margin-bottom: 8px;")
         card_layout.addWidget(subtitle)
 
         input_style = f"""
             QLineEdit, QComboBox {{
-                border: 1px solid {BORDER};
+                border: 1px solid {ls['border']};
                 border-radius: 6px;
                 padding: 10px 14px;
                 font-size: 14px;
                 font-family: 'Segoe UI';
-                background-color: #FAFBFC;
-                color: {TEXT_PRIMARY};
+                background-color: {ls['primary_light']};
+                color: {ls['text_primary']};
                 min-height: 20px;
             }}
             QLineEdit:focus, QComboBox:focus {{
-                border: 1px solid {PRIMARY_COLOR};
-                background-color: {BG_CARD};
+                border: 1px solid {ls['primary']};
+                background-color: {ls['card_bg']};
             }}
         """
 
@@ -84,7 +83,7 @@ class RegisterWindow(QDialog):
         form.setSpacing(10)
         form.setLabelAlignment(Qt.AlignLeft)
 
-        label_style = f"color: {TEXT_SECONDARY}; font-size: 12px; border: none;"
+        label_style = f"color: {ls['text_secondary']}; font-size: 12px; border: none;"
 
         self.username_input = QLineEdit()
         self.username_input.setPlaceholderText('Имя пользователя')
@@ -133,12 +132,12 @@ class RegisterWindow(QDialog):
         self.register_button.setFont(QFont('Segoe UI', 12, QFont.Bold))
         self.register_button.setStyleSheet(f"""
             QPushButton {{
-                background-color: {PRIMARY_COLOR};
+                background-color: {ls['primary']};
                 color: white;
                 border: none;
                 border-radius: 6px;
             }}
-            QPushButton:hover {{ background-color: {PRIMARY_DARK}; }}
+            QPushButton:hover {{ background-color: {ls['primary_dark']}; }}
         """)
         self.register_button.clicked.connect(self.register)
         card_layout.addWidget(self.register_button)
@@ -149,18 +148,18 @@ class RegisterWindow(QDialog):
         self.cancel_button.setStyleSheet(f"""
             QPushButton {{
                 background: transparent;
-                color: {PRIMARY_COLOR};
+                color: {ls['primary']};
                 border: none;
                 font-weight: 600;
             }}
-            QPushButton:hover {{ color: {PRIMARY_DARK}; }}
+            QPushButton:hover {{ color: {ls['primary_dark']}; }}
         """)
         self.cancel_button.clicked.connect(self.reject)
         card_layout.addWidget(self.cancel_button)
 
         note = QLabel('* — обязательные поля')
         note.setAlignment(Qt.AlignCenter)
-        note.setStyleSheet(f"color: {TEXT_SECONDARY}; font-size: 11px; border: none;")
+        note.setStyleSheet(f"color: {ls['text_secondary']}; font-size: 11px; border: none;")
         card_layout.addWidget(note)
 
         scroll.setWidget(inner)

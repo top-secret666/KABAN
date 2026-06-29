@@ -31,6 +31,10 @@ class MainWindow(QMainWindow):
 
     def apply_theme(self):
         self.setStyleSheet(get_stylesheet())
+        if hasattr(self, 'sidebar'):
+            self.sidebar.refresh_theme()
+        if hasattr(self, 'dashboard_tab') and hasattr(self.dashboard_tab, 'refresh_theme'):
+            self.dashboard_tab.refresh_theme()
 
     def init_ui(self):
         self.setWindowTitle('KABAN:manager')

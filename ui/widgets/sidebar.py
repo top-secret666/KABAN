@@ -132,3 +132,17 @@ class Sidebar(QFrame):
 
     def item_keys(self):
         return [item[0] for item in self._items]
+
+    def refresh_theme(self):
+        from ui.resources.styles import TEXT_WHITE, SIDEBAR_TEXT_DIM
+        for lbl in self.findChildren(QLabel):
+            style = lbl.styleSheet() or ''
+            if 'SIDEBAR_TEXT_DIM' in style or lbl.font().pointSize() == 9:
+                if lbl.text() in ('manager', 'Администратор', 'Менеджер', 'Разработчик'):
+                    lbl.setStyleSheet(
+                        f'color: {SIDEBAR_TEXT_DIM}; background: transparent; border: none;'
+                    )
+            elif lbl.font().bold() and lbl.text() in ('KABAN', self.user.full_name):
+                lbl.setStyleSheet(
+                    f'color: {TEXT_WHITE}; background: transparent; border: none;'
+                )

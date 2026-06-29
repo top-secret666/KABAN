@@ -196,6 +196,7 @@ class SettingsTab(QWidget):
 
         interface_layout.addLayout(interface_buttons_layout)
         interface_layout.addStretch()
+        self._on_bg_preset_changed()
 
         # Вкладка "База данных"
         database_tab = QWidget()
@@ -370,7 +371,9 @@ class SettingsTab(QWidget):
 
         if color.isValid():
             self.accent_color = color
-            self.accent_color_button.setStyleSheet(f"background-color: {color.name()};")
+            self.accent_color_button.setStyleSheet(
+                f"background-color: {color.name()}; border: 1px solid #888; border-radius: 4px;"
+            )
 
             self.accent_color_button.setStyleSheet(
                 f"background-color: {color.name()}; border: 1px solid #888; border-radius: 4px;"

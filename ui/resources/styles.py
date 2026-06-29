@@ -784,3 +784,11 @@ COLORS = {
     'status_done': STATUS_DONE,
     'status_done_bg': STATUS_DONE_BG,
 }
+
+# Инициализация темы из сохранённых настроек
+try:
+    from ui.resources.theme_manager import get_stylesheet, build_palette, sync_styles_module
+    GLOBAL_STYLE = get_stylesheet()
+    sync_styles_module(build_palette())
+except Exception:
+    pass
