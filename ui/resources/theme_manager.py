@@ -11,10 +11,10 @@ APP = 'KABAN:manager'
 _current_palette = None
 
 LIGHT_DEFAULTS = {
-    'bg_main': '#EDEEF0',
+    'bg_main': '#F4F6FA',
     'bg_card': '#FFFFFF',
     'bg_header': '#FFFFFF',
-    'input_bg': '#FFFFFF',
+    'input_bg': '#F8FAFC',
 }
 
 DARK_DEFAULTS = {
@@ -26,10 +26,10 @@ DARK_DEFAULTS = {
 
 BG_PRESETS = {
     'default': '',
-    'gray': '#E8E9EC',
-    'blue': '#E8F4FC',
-    'mint': '#E8F5F0',
-    'warm': '#F5F0E8',
+    'gray': '#F1F3F7',
+    'blue': '#EEF4FF',
+    'mint': '#EDF8F4',
+    'warm': '#FAF6F0',
     'dark_gray': '#1a1d24',
     'dark_blue': '#151c28',
     'dark_purple': '#1a1824',
@@ -120,33 +120,34 @@ def build_palette(config=None):
             'bg_main': bg_main,
             'bg_card': '#FFFFFF',
             'bg_header': '#FFFFFF',
-            'input_bg': '#FFFFFF',
-            'text_primary': '#333333',
-            'text_secondary': '#828B95',
+            'input_bg': '#F8FAFC',
+            'text_primary': '#0F172A',
+            'text_secondary': '#64748B',
             'text_white': '#ffffff',
             'text_on_primary': '#ffffff',
-            'border': '#E0E4EA',
-            'border_light': '#EEF0F3',
-            'border_hover': '#C0C8D6',
-            'divider': '#E8EAED',
-            'table_alt': '#FAFBFC',
-            'table_header': '#F7F8FA',
-            'kanban_col_bg': '#F0F2F5',
-            'scrollbar': '#C5CAD3',
-            'scrollbar_hover': '#A0A8B4',
-            'sidebar_bg': '#333B4F',
-            'sidebar_hover': '#3E4659',
-            'sidebar_user_bg': '#2A3140',
-            'sidebar_text': '#ffffff',
-            'sidebar_text_dim': '#A8B0BC',
-            'sidebar_border': '#2A3140',
-            'sidebar_active_bg': _accent_tint(accent, 0.15),
+            'border': '#E2E8F0',
+            'border_light': '#F1F5F9',
+            'border_hover': '#CBD5E1',
+            'divider': '#E8ECF2',
+            'table_alt': '#FAFBFD',
+            'table_header': '#FFFFFF',
+            'table_hover': '#F8FAFC',
+            'kanban_col_bg': '#F1F5F9',
+            'scrollbar': '#CBD5E1',
+            'scrollbar_hover': '#94A3B8',
+            'sidebar_bg': '#0F172A',
+            'sidebar_hover': '#1E293B',
+            'sidebar_user_bg': '#0B1220',
+            'sidebar_text': '#F8FAFC',
+            'sidebar_text_dim': '#94A3B8',
+            'sidebar_border': '#1E293B',
+            'sidebar_active_bg': _accent_tint(accent, 0.2),
         }
-        status_new_bg = '#E8F9FE'
-        status_progress_bg = '#FFF8E6'
-        status_review_bg = '#F5EEFF'
-        status_done_bg = '#F3FBE6'
-        accent_light = '#FFF0F0'
+        status_new_bg = '#EFF6FF'
+        status_progress_bg = '#FFFBEB'
+        status_review_bg = '#F5F3FF'
+        status_done_bg = '#F0FDF4'
+        accent_light = '#FEF2F2'
 
     p.update({
         'primary': accent,
