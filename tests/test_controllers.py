@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models import DBManager
 from controllers import DeveloperController, ProjectController, TaskController, ReportController
+from services import DeveloperService, ProjectService, TaskService, ReportService
 from exceptions import ValidationException
 
 class TestControllers(unittest.TestCase):
@@ -33,11 +34,11 @@ class TestControllers(unittest.TestCase):
         cls.db_manager.conn.executescript(sql_script)
         cls.db_manager.commit()
         
-        # Создаем контроллеры
-        cls.developer_controller = DeveloperController()
-        cls.project_controller = ProjectController()
-        cls.task_controller = TaskController()
-        cls.report_controller = ReportController()
+        # Создаем контроллеры с общей тестовой БД
+        cls.developer_controller = DeveloperController(DeveloperService(cls.db_manager))
+        cls.project_controller = ProjectController(ProjectService(cls.db_manager))
+        cls.task_controller = TaskController(TaskService(cls.db_manager))
+        cls.report_controller = ReportController(ReportService(cls.db_manager))
 
     def setUp(self):
         """

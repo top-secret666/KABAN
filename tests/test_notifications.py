@@ -194,7 +194,10 @@ class TestNotifications(unittest.TestCase):
         """
         Тест проверки просроченных проектов
         """
-        # Создаем проект с прошедшим дедлайном
+        future = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
+        self.db_manager.conn.execute("UPDATE projects SET deadline = ?", (future,))
+        self.db_manager.commit()
+
         yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
         self.db_manager.conn.execute(
             "INSERT INTO projects (name, client, deadline, budget) VALUES (?, ?, ?, ?)",
@@ -218,7 +221,10 @@ class TestNotifications(unittest.TestCase):
         """
         Тест запуска всех проверок
         """
-        # Создаем тестовые данные для проверок
+        future_far = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
+        self.db_manager.conn.execute("UPDATE projects SET deadline = ?", (future_far,))
+        self.db_manager.commit()
+
         yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
         future = (datetime.now() + timedelta(days=3)).strftime('%Y-%m-%d')
         
