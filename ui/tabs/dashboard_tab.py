@@ -251,15 +251,22 @@ class DashboardTab(QWidget):
         main_layout.setSpacing(0)
 
         header = QFrame()
-        header.setStyleSheet(f"background-color: {BG_CARD}; border-bottom: 1px solid {BORDER};")
+        header.setObjectName('dashboard_header')
+        header.setStyleSheet(
+            f"QFrame#dashboard_header {{"
+            f" background-color: {BG_CARD}; border-bottom: 1px solid {BORDER}; }}"
+        )
         header.setFixedHeight(64)
         self._header = header
         header_layout = QHBoxLayout(header)
         header_layout.setContentsMargins(24, 0, 24, 0)
 
         greeting = QLabel(f"👋 {self.user.full_name}")
+        greeting.setObjectName('dashboard_greeting')
         greeting.setFont(QFont('Segoe UI', 16, QFont.DemiBold))
-        greeting.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none;")
+        greeting.setStyleSheet(
+            f"QLabel#dashboard_greeting {{ color: {TEXT_PRIMARY}; border: none; background: transparent; }}"
+        )
         self._greeting = greeting
         header_layout.addWidget(greeting)
         header_layout.addStretch()
@@ -279,14 +286,20 @@ class DashboardTab(QWidget):
         self._scroll_area = scroll_area
 
         content = QWidget()
-        content.setStyleSheet(f"background-color: {BG_MAIN};")
+        content.setObjectName('dashboard_content')
+        content.setStyleSheet(
+            f"QWidget#dashboard_content {{ background-color: {BG_MAIN}; }}"
+        )
         self._content = content
         self._content_layout = QVBoxLayout(content)
         self._content_layout.setContentsMargins(24, 20, 24, 20)
         self._content_layout.setSpacing(20)
 
         self._stats_host = QWidget()
-        self._stats_host.setStyleSheet("background: transparent; border: none;")
+        self._stats_host.setObjectName('dashboard_stats')
+        self._stats_host.setStyleSheet(
+            "QWidget#dashboard_stats { background: transparent; border: none; }"
+        )
         self._stats_layout = QHBoxLayout(self._stats_host)
         self._stats_layout.setContentsMargins(0, 0, 0, 0)
         self._stats_layout.setSpacing(16)
@@ -294,8 +307,11 @@ class DashboardTab(QWidget):
 
         board_header = QHBoxLayout()
         board_title = QLabel("📋  Kanban-доска")
+        board_title.setObjectName('dashboard_board_title')
         board_title.setFont(QFont('Segoe UI', 15, QFont.DemiBold))
-        board_title.setStyleSheet(f"color: {TEXT_PRIMARY};")
+        board_title.setStyleSheet(
+            f"QLabel#dashboard_board_title {{ color: {TEXT_PRIMARY}; background: transparent; border: none; }}"
+        )
         self._board_title = board_title
         board_header.addWidget(board_title)
         board_header.addStretch()
@@ -309,10 +325,14 @@ class DashboardTab(QWidget):
         add_task_btn.clicked.connect(lambda: self.add_task('новая'))
         self._add_task_btn = add_task_btn
         board_header.addWidget(add_task_btn)
+        self._apply_add_task_btn_style()
         self._content_layout.addLayout(board_header)
 
         self._kanban_host = QFrame()
-        self._kanban_host.setStyleSheet("background: transparent; border: none;")
+        self._kanban_host.setObjectName('dashboard_kanban')
+        self._kanban_host.setStyleSheet(
+            "QFrame#dashboard_kanban { background: transparent; border: none; }"
+        )
         self._kanban_layout = QHBoxLayout(self._kanban_host)
         self._kanban_layout.setContentsMargins(0, 0, 0, 0)
         self._kanban_layout.setSpacing(14)
@@ -451,6 +471,25 @@ class DashboardTab(QWidget):
             else:
                 QMessageBox.critical(self, "Ошибка", result['error_message'])
 
+    def _apply_add_task_btn_style(self):
+        from ui.resources.theme_manager import current_palette
+        p = current_palette()
+        self._add_task_btn.setStyleSheet(f"""
+            QPushButton#btn_primary {{
+                background-color: {p['primary']};
+                color: {p['text_on_primary']};
+                border: 1px solid {p['primary_dark']};
+                border-radius: 8px;
+                padding: 8px 18px;
+                font-size: 13px;
+                font-weight: 600;
+            }}
+            QPushButton#btn_primary:hover {{
+                background-color: {p['primary_dark']};
+                border-color: {p['primary_pressed']};
+            }}
+        """)
+
     def show_all_tasks(self):
         window = self.window()
         if hasattr(window, '_switch_to_key'):
@@ -460,18 +499,27 @@ class DashboardTab(QWidget):
         from ui.resources import styles as s
         if hasattr(self, '_header'):
             self._header.setStyleSheet(
-                f"background-color: {s.BG_CARD}; border-bottom: 1px solid {s.BORDER};"
+                f"QFrame#dashboard_header {{"
+                f" background-color: {s.BG_CARD}; border-bottom: 1px solid {s.BORDER}; }}"
             )
         if hasattr(self, '_greeting'):
-            self._greeting.setStyleSheet(f"color: {s.TEXT_PRIMARY}; border: none;")
+            self._greeting.setStyleSheet(
+                f"QLabel#dashboard_greeting {{ color: {s.TEXT_PRIMARY}; border: none; background: transparent; }}"
+            )
         if hasattr(self, '_scroll_area'):
             self._scroll_area.setStyleSheet(
                 f"QScrollArea {{ background-color: {s.BG_MAIN}; border: none; }}"
             )
         if hasattr(self, '_content'):
-            self._content.setStyleSheet(f"background-color: {s.BG_MAIN};")
+            self._content.setStyleSheet(
+                f"QWidget#dashboard_content {{ background-color: {s.BG_MAIN}; }}"
+            )
         if hasattr(self, '_board_title'):
-            self._board_title.setStyleSheet(f"color: {s.TEXT_PRIMARY};")
+            self._board_title.setStyleSheet(
+                f"QLabel#dashboard_board_title {{ color: {s.TEXT_PRIMARY}; background: transparent; border: none; }}"
+            )
+        if hasattr(self, '_add_task_btn'):
+            self._apply_add_task_btn_style()
 
     def refresh_data(self):
         try:
