@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                              QComboBox, QDateEdit, QGroupBox, QFormLayout, QTextBrowser,
                              QFileDialog, QMessageBox, QTabWidget, QDialog)
-from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QDate
 
 from controllers import ReportController, ExportController
+from ui.widgets.tab_page import TabPage
+from ui.resources.icon_helper import get_icon
 
 class ReportsTab(QWidget):
     """
@@ -19,24 +20,12 @@ class ReportsTab(QWidget):
         self.init_ui()
     
     def init_ui(self):
-        """
-        Инициализация интерфейса
-        """
-        # Основной layout
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(20)
-        
-        # Заголовок
-        header_layout = QHBoxLayout()
-        
-        title_label = QLabel("Отчеты")
-        title_label.setFont(QFont('Arial', 16, QFont.Bold))
-        header_layout.addWidget(title_label)
-        
-        main_layout.addLayout(header_layout)
-        
-        # Создание вкладок для разных типов отчетов
+        page = TabPage('Отчёты', 'Аналитика и экспорт данных')
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(page)
+        main_layout = page.content_layout
+
         self.tab_widget = QTabWidget()
         
         # Вкладка "Просроченные задачи"
@@ -47,11 +36,11 @@ class ReportsTab(QWidget):
         overdue_button_layout = QHBoxLayout()
         
         generate_overdue_button = QPushButton("Сгенерировать отчет")
-        generate_overdue_button.setIcon(QIcon('ui/resources/icons/report.png'))
+        generate_overdue_button.setIcon(get_icon('report'))
         generate_overdue_button.clicked.connect(self.generate_overdue_tasks_report)
-        
+
         export_overdue_button = QPushButton("Экспорт")
-        export_overdue_button.setIcon(QIcon('ui/resources/icons/export.png'))
+        export_overdue_button.setIcon(get_icon('export'))
         export_overdue_button.clicked.connect(lambda: self.export_report("overdue"))
         
         overdue_button_layout.addWidget(generate_overdue_button)
@@ -90,11 +79,11 @@ class ReportsTab(QWidget):
         workload_button_layout = QHBoxLayout()
         
         generate_workload_button = QPushButton("Сгенерировать отчет")
-        generate_workload_button.setIcon(QIcon('ui/resources/icons/report.png'))
+        generate_workload_button.setIcon(get_icon('report'))
         generate_workload_button.clicked.connect(self.generate_developer_workload_report)
         
         export_workload_button = QPushButton("Экспорт")
-        export_workload_button.setIcon(QIcon('ui/resources/icons/export.png'))
+        export_workload_button.setIcon(get_icon('export'))
         export_workload_button.clicked.connect(lambda: self.export_report("workload"))
         
         workload_button_layout.addWidget(generate_workload_button)
@@ -115,11 +104,11 @@ class ReportsTab(QWidget):
         project_status_button_layout = QHBoxLayout()
         
         generate_project_status_button = QPushButton("Сгенерировать отчет")
-        generate_project_status_button.setIcon(QIcon('ui/resources/icons/report.png'))
+        generate_project_status_button.setIcon(get_icon('report'))
         generate_project_status_button.clicked.connect(self.generate_project_status_report)
         
         export_project_status_button = QPushButton("Экспорт")
-        export_project_status_button.setIcon(QIcon('ui/resources/icons/export.png'))
+        export_project_status_button.setIcon(get_icon('export'))
         export_project_status_button.clicked.connect(lambda: self.export_report("project_status"))
         
         project_status_button_layout.addWidget(generate_project_status_button)
@@ -166,11 +155,11 @@ class ReportsTab(QWidget):
         revenue_button_layout = QHBoxLayout()
         
         generate_revenue_button = QPushButton("Сгенерировать отчет")
-        generate_revenue_button.setIcon(QIcon('ui/resources/icons/report.png'))
+        generate_revenue_button.setIcon(get_icon('report'))
         generate_revenue_button.clicked.connect(self.generate_monthly_revenue_report)
         
         export_revenue_button = QPushButton("Экспорт")
-        export_revenue_button.setIcon(QIcon('ui/resources/icons/export.png'))
+        export_revenue_button.setIcon(get_icon('export'))
         export_revenue_button.clicked.connect(lambda: self.export_report("revenue"))
         
         revenue_button_layout.addWidget(generate_revenue_button)

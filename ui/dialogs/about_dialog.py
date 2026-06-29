@@ -1,56 +1,57 @@
-from PyQt5.QtWidgets import (QDialog, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, 
+from PyQt5.QtWidgets import (QDialog, QLabel, QPushButton, QVBoxLayout, QHBoxLayout,
                             QTabWidget, QTextBrowser)
-from PyQt5.QtGui import QIcon, QFont, QPixmap
+from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtCore import Qt, QSize
 
+from ui.resources.icon_helper import get_icon
+from ui.resources.styles import GLOBAL_STYLE, TEXT_PRIMARY, TEXT_SECONDARY, PRIMARY_COLOR
+
+
 class AboutDialog(QDialog):
-    """
-    Диалог "О программе"
-    """
+    """Диалог «О программе»."""
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setStyleSheet(GLOBAL_STYLE)
         self.init_ui()
-    
+
     def init_ui(self):
-        """
-        Инициализация интерфейса
-        """
-        # Настройка окна
         self.setWindowTitle('О программе')
-        self.setWindowIcon(QIcon('ui/resources/icons/about.png'))
-        self.setMinimumSize(600, 400)
+        self.setWindowIcon(get_icon('about'))
+        self.setMinimumSize(600, 420)
         self.setWindowFlags(Qt.WindowCloseButtonHint | Qt.WindowTitleHint)
-        
-        # Основной layout
+
         main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setContentsMargins(28, 24, 28, 24)
         main_layout.setSpacing(20)
-        
-        # Верхняя часть с логотипом и названием
+
         header_layout = QHBoxLayout()
-        
-        # Логотип
+        header_layout.setSpacing(20)
+
         logo_label = QLabel()
         logo_pixmap = QPixmap('ui/resources/icons/logo.png')
-        logo_label.setPixmap(logo_pixmap.scaled(100, 100, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        logo_label.setPixmap(logo_pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         header_layout.addWidget(logo_label)
-        
-        # Информация о программе
+
         info_layout = QVBoxLayout()
-        
+        info_layout.setSpacing(4)
+
         title_label = QLabel('KABAN:manager')
-        title_label.setFont(QFont('Arial', 18, QFont.Bold))
-        
+        title_label.setFont(QFont('Segoe UI', 20, QFont.Bold))
+        title_label.setStyleSheet(f'color: {TEXT_PRIMARY};')
+
         version_label = QLabel('Версия 1.0.0')
-        version_label.setFont(QFont('Arial', 12))
-        
+        version_label.setFont(QFont('Segoe UI', 11))
+        version_label.setStyleSheet(f'color: {PRIMARY_COLOR}; font-weight: 600;')
+
         description_label = QLabel('Система управления проектами и задачами для команд разработчиков')
         description_label.setWordWrap(True)
-        
+        description_label.setFont(QFont('Segoe UI', 11))
+        description_label.setStyleSheet(f'color: {TEXT_SECONDARY};')
+
         info_layout.addWidget(title_label)
         info_layout.addWidget(version_label)
         info_layout.addWidget(description_label)
-        
         header_layout.addLayout(info_layout)
         main_layout.addLayout(header_layout)
         

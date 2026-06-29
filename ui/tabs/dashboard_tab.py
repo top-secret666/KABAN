@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont, QIcon, QColor, QPainter, QPainterPath, QBrush, QP
 from PyQt5.QtCore import Qt, QSize, QPropertyAnimation, QEasingCurve
 
 from controllers import ProjectController, TaskController, DeveloperController, NotificationController
+from ui.resources.icon_helper import get_icon
 from ui.resources.styles import (
     STATUS_NEW, STATUS_NEW_BG, STATUS_PROGRESS, STATUS_PROGRESS_BG,
     STATUS_REVIEW, STATUS_REVIEW_BG, STATUS_DONE, STATUS_DONE_BG,
@@ -360,15 +361,17 @@ class DashboardTab(QWidget):
 
     def create_notifications_widget(self):
         frame = QFrame()
-        frame.setFrameShape(QFrame.StyledPanel)
-        frame.setFrameShadow(QFrame.Raised)
+        frame.setFrameShape(QFrame.NoFrame)
         frame.setObjectName('notifications_panel')
 
         layout = QVBoxLayout(frame)
+        layout.setContentsMargins(20, 16, 20, 16)
+        layout.setSpacing(12)
 
         header_layout = QHBoxLayout()
-        title_label = QLabel("Уведомления")
-        title_label.setFont(QFont('Segoe UI', 14, QFont.Bold))
+        title_label = QLabel("🔔  Уведомления")
+        title_label.setFont(QFont('Segoe UI', 14, QFont.DemiBold))
+        title_label.setStyleSheet(f"color: {TEXT_PRIMARY}; border: none;")
         header_layout.addWidget(title_label)
 
         mark_all_button = QPushButton("Отметить все как прочитанные")
@@ -404,15 +407,8 @@ class DashboardTab(QWidget):
         layout = QHBoxLayout(item)
         layout.setContentsMargins(10, 10, 10, 10)
 
-        icon_path = {
-            'info': 'ui/resources/icons/info.png',
-            'success': 'ui/resources/icons/success.png',
-            'warning': 'ui/resources/icons/warning.png',
-            'error': 'ui/resources/icons/error.png'
-        }.get(notification.type, 'ui/resources/icons/info.png')
-
         icon_label = QLabel()
-        icon_label.setPixmap(QIcon(icon_path).pixmap(QSize(24, 24)))
+        icon_label.setPixmap(get_icon(notification.type).pixmap(QSize(24, 24)))
         layout.addWidget(icon_label)
 
         text_layout = QVBoxLayout()

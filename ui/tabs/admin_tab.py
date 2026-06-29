@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QFont
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget,
                              QTableWidgetItem, QPushButton, QLabel, QMessageBox,
                              QDialog, QFormLayout, QLineEdit, QComboBox, QCheckBox,
@@ -6,6 +6,9 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QTableWidget,
 
 from PyQt5.QtCore import Qt
 from controllers.auth_controller import AuthController
+from ui.widgets.tab_page import TabPage
+from ui.resources.icon_helper import get_icon
+from ui.resources.styles import GLOBAL_STYLE
 
 class UserEditDialog(QDialog):
     """
@@ -136,17 +139,13 @@ class AdminTab(QWidget):
         self.load_users()
 
     def init_ui(self):
-        """
-        Инициализация интерфейса
-        """
-        layout = QVBoxLayout()
+        self.setStyleSheet(GLOBAL_STYLE)
+        page = TabPage('Администрирование', 'Управление пользователями системы')
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(page)
+        layout = page.content_layout
 
-        # Заголовок
-        title_label = QLabel("Управление пользователями")
-        title_label.setStyleSheet("font-size: 16pt; font-weight: bold;")
-        layout.addWidget(title_label)
-
-        # Таблица пользователей
         self.users_table = QTableWidget()
         self.users_table.setColumnCount(6)
         self.users_table.setHorizontalHeaderLabels(["ID", "Имя пользователя", "Email", "Полное имя", "Роль", "Активен"])
@@ -161,10 +160,15 @@ class AdminTab(QWidget):
         button_layout = QHBoxLayout()
 
         self.add_button = QPushButton("Добавить пользователя")
+        self.add_button.setIcon(get_icon('add'))
         self.edit_button = QPushButton("Редактировать")
+        self.edit_button.setIcon(get_icon('edit'))
         self.delete_button = QPushButton("Удалить")
+        self.delete_button.setIcon(get_icon('delete'))
+        self.delete_button.setObjectName("error")
         self.reset_password_button = QPushButton("Сбросить пароль")
         self.refresh_button = QPushButton("Обновить")
+        self.refresh_button.setIcon(get_icon('refresh'))
 
         self.add_button.clicked.connect(self.add_item)
         self.edit_button.clicked.connect(self.edit_item)
@@ -179,8 +183,6 @@ class AdminTab(QWidget):
         button_layout.addWidget(self.refresh_button)
 
         layout.addLayout(button_layout)
-
-        self.setLayout(layout)
 
         self.reset_password_shortcut = QShortcut(QKeySequence("Ctrl+P"), self)
         self.reset_password_shortcut.activated.connect(self.reset_password)
