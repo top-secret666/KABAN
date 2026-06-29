@@ -499,8 +499,7 @@ class DashboardTab(QWidget):
         from ui.resources import styles as s
         if hasattr(self, '_header'):
             self._header.setStyleSheet(
-                f"QFrame#dashboard_header {{"
-                f" background-color: {s.BG_CARD}; border-bottom: 1px solid {s.BORDER}; }}"
+                "QFrame#dashboard_header { background-color: transparent; border: none; }"
             )
         if hasattr(self, '_greeting'):
             self._greeting.setStyleSheet(
