@@ -19,6 +19,9 @@ def main():
     app.setWindowIcon(QIcon('ui/resources/icons/logo.png'))
     app.setFont(QFont('Segoe UI', 10))
 
+    from ui.resources.theme_manager import apply_theme
+    apply_theme(app)
+
     # Инициализация базы данных
     db_manager = DBManager('database/kaban.db')
 

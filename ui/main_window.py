@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize
 
-from ui.resources.styles import GLOBAL_STYLE
+from ui.resources.theme_manager import get_stylesheet, apply_theme
 from ui.resources.icon_helper import get_icon, app_icon
 from ui.widgets.sidebar import Sidebar
 from ui.tabs.admin_tab import AdminTab
@@ -27,7 +27,10 @@ class MainWindow(QMainWindow):
         self.user = user
         self._pages = {}
         self.init_ui()
-        self.setStyleSheet(GLOBAL_STYLE)
+        self.setStyleSheet(get_stylesheet())
+
+    def apply_theme(self):
+        self.setStyleSheet(get_stylesheet())
 
     def init_ui(self):
         self.setWindowTitle('KABAN:manager')
