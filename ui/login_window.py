@@ -82,20 +82,20 @@ class LoginWindow(QDialog):
         # Поля ввода
         input_style = f"""
             QLineEdit {{
-                border: 2px solid {BORDER};
+                border: 2px solid {ls['border']};
                 border-radius: 10px;
                 padding: 12px 16px;
                 font-size: 14px;
                 font-family: 'Segoe UI';
-                background-color: #F8F9FB;
-                color: {TEXT_PRIMARY};
+                background-color: {ls['primary_light']};
+                color: {ls['text_primary']};
             }}
             QLineEdit:focus {{
-                border: 2px solid {PRIMARY_COLOR};
-                background-color: {BG_CARD};
+                border: 2px solid {ls['primary']};
+                background-color: {ls['card_bg']};
             }}
             QLineEdit::placeholder {{
-                color: {TEXT_SECONDARY};
+                color: {ls['text_secondary']};
             }}
         """
 
@@ -121,17 +121,14 @@ class LoginWindow(QDialog):
         self.login_button.setFont(QFont('Segoe UI', 13, QFont.Bold))
         self.login_button.setStyleSheet(f"""
             QPushButton {{
-                background-color: {PRIMARY_COLOR};
+                background-color: {ls['primary']};
                 color: white;
                 border: none;
                 border-radius: 10px;
                 font-weight: bold;
             }}
             QPushButton:hover {{
-                background-color: {PRIMARY_DARK};
-            }}
-            QPushButton:pressed {{
-                background-color: #1838A0;
+                background-color: {ls['primary_dark']};
             }}
         """)
         self.login_button.clicked.connect(self.login)
@@ -145,13 +142,12 @@ class LoginWindow(QDialog):
         self.register_button.setStyleSheet(f"""
             QPushButton {{
                 background: transparent;
-                color: {PRIMARY_COLOR};
+                color: {ls['primary']};
                 border: none;
                 font-weight: 600;
             }}
             QPushButton:hover {{
-                color: {PRIMARY_DARK};
-                text-decoration: underline;
+                color: {ls['primary_dark']};
             }}
         """)
         self.register_button.clicked.connect(self.show_register)
@@ -160,7 +156,7 @@ class LoginWindow(QDialog):
         # Версия
         version = QLabel('v1.0.0')
         version.setAlignment(Qt.AlignCenter)
-        version.setStyleSheet(f"color: {TEXT_SECONDARY}; font-size: 10px; border: none; background: transparent;")
+        version.setStyleSheet(f"color: {ls['text_secondary']}; font-size: 10px; border: none; background: transparent;")
         card_layout.addWidget(version)
 
         main_layout.addWidget(card)
