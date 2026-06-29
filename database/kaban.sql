@@ -280,12 +280,11 @@ END;
 -- Добавление администратора по умолчанию (пароль: admin)
 INSERT OR IGNORE INTO users (username, password, email, full_name, role, is_active)
 VALUES
-('admin', '$kaban_admin_v1$5339711063c99e0091dd0d254336e5373e1c2bdd0235f814696d45eeebab7e86', 'admin@example.com', 'Администратор', 'admin', 1),
-('1', '$1a616f9728e5150875b99126c4557f91$8cbffdff5e89238d471e04779aee58b587340a9601303259cb4e77e3dd117d44', '1@.com', '1', 'admin', 1);
+('admin', '$kaban_admin_v1$5339711063c99e0091dd0d254336e5373e1c2bdd0235f814696d45eeebab7e86', 'admin@example.com', 'Администратор', 'admin', 1);
 
--- Добавление тестовых пользователей
+-- Добавление тестовых пользователей (пароль: password123)
 INSERT OR IGNORE INTO users (username, password, email, full_name, role, is_active)
-VALUES 
+VALUES
 ('manager', '$kaban_seed_v1$400545263b410d2c2ed80568563ef583e1120b04e6bc94e0b6f51484b5e2afb0', 'manager@example.com', 'Менеджер Проектов', 'manager', 1),
 ('developer1', '$kaban_seed_v1$400545263b410d2c2ed80568563ef583e1120b04e6bc94e0b6f51484b5e2afb0', 'dev1@example.com', 'Иванов Иван Иванович', 'developer', 1),
 ('developer2', '$kaban_seed_v1$400545263b410d2c2ed80568563ef583e1120b04e6bc94e0b6f51484b5e2afb0', 'dev2@example.com', 'Петров Петр Петрович', 'developer', 1);
@@ -306,14 +305,14 @@ VALUES
 ('Корпоративный портал', 'АО "Корпорация"', '2023-11-30', 350000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
 ('Мобильное приложение', 'ИП Смирнов', '2024-02-15', 600000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
 ('CRM-система', 'ООО "Бизнес Решения"', '2023-10-15', 450000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('Система учета рабочего времени', 'ЗАО "ТехноПром"', '2024-01-20', 280000, 'в работе', (SELECT id FROM users WHERE username = 'manager2')),
-('Платформа онлайн-обучения', 'Образовательный центр "Знание"', '2024-03-10', 520000, 'в работе', (SELECT id FROM users WHERE username = 'manager2')),
+('Система учета рабочего времени', 'ЗАО "ТехноПром"', '2024-01-20', 280000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
+('Платформа онлайн-обучения', 'Образовательный центр "Знание"', '2024-03-10', 520000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
 ('Система электронного документооборота', 'Государственное учреждение', '2023-12-15', 700000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('Мобильное приложение для фитнеса', 'Сеть фитнес-клубов "Атлет"', '2024-04-01', 420000, 'в работе', (SELECT id FROM users WHERE username = 'manager2')),
+('Мобильное приложение для фитнеса', 'Сеть фитнес-клубов "Атлет"', '2024-04-01', 420000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
 ('Система автоматизации склада', 'ООО "Логистик Групп"', '2023-11-15', 550000, 'завершено', (SELECT id FROM users WHERE username = 'manager')),
-('Личный кабинет клиента', 'Банк "Финансовый"', '2024-01-10', 380000, 'в работе', (SELECT id FROM users WHERE username = 'manager2')),
+('Личный кабинет клиента', 'Банк "Финансовый"', '2024-01-10', 380000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
 ('Система аналитики продаж', 'Торговая сеть "МегаМаркет"', '2024-02-28', 490000, 'в работе', (SELECT id FROM users WHERE username = 'manager')),
-('Веб-сайт строительной компании', 'ООО "СтройМастер"', '2023-10-30', 250000, 'завершено', (SELECT id FROM users WHERE username = 'manager2'));
+('Веб-сайт строительной компании', 'ООО "СтройМастер"', '2023-10-30', 250000, 'завершено', (SELECT id FROM users WHERE username = 'manager'));
 --  Добавление задач
 INSERT OR IGNORE INTO tasks (project_id, developer_id, description, status, hours_worked, created_by)
 VALUES

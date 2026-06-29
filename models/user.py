@@ -206,13 +206,6 @@ class User:
         if not self.password or not password:
             return False
 
-        # Если пароль хранится в открытом виде (для тестовых пользователей)
-        if self.password == password:
-            # Автоматически обновляем пароль на хешированный
-            self.password = self._hash_password(password)
-            self.save()
-            return True
-
         # Проверка для хешей в формате $salt$hash
         if self.password.startswith('$'):
             parts = self.password.split('$')

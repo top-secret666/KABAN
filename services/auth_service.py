@@ -22,9 +22,6 @@ class AuthService(BaseService):
             if not user.is_active:
                 raise BusinessException("Учетная запись отключена")
 
-            # Для отладки: вывод информации о пользователе
-            print(f"Найден пользователь: {user.username}, роль: {user.role}")
-
             if not user.check_password(password):
                 raise BusinessException("Неверное имя пользователя или пароль")
 
@@ -53,6 +50,9 @@ class AuthService(BaseService):
             User: Созданный пользователь
         """
         try:
+            if role != 'developer':
+                raise BusinessException("Самостоятельная регистрация доступна только для роли «разработчик»")
+
             # Проверка, что пользователь с таким именем не существует
             existing_user = User.get_by_username(username, self.db_manager)
             if existing_user:
