@@ -45,14 +45,14 @@ class LoginWindow(QDialog):
         card.setStyleSheet(f"""
             QFrame {{
                 background-color: {ls['card_bg']};
-                border-radius: 16px;
-                border: none;
+                border-radius: 20px;
+                border: 1px solid {ls['border']};
             }}
         """)
         shadow = QGraphicsDropShadowEffect(card)
-        shadow.setBlurRadius(40)
-        shadow.setOffset(0, 8)
-        shadow.setColor(QColor(0, 0, 0, 60))
+        shadow.setBlurRadius(48)
+        shadow.setOffset(0, 12)
+        shadow.setColor(QColor(15, 23, 42, 28))
         card.setGraphicsEffect(shadow)
 
         card_layout = QVBoxLayout(card)
