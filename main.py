@@ -1,7 +1,7 @@
 import sys
 import os
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QTimer
 
 from ui import LoginWindow, MainWindow, SplashScreen
@@ -17,6 +17,10 @@ def main():
     app = QApplication(sys.argv)
     app.setApplicationName('KABAN:manager')
     app.setWindowIcon(QIcon('ui/resources/icons/logo.png'))
+    app.setFont(QFont('Segoe UI', 10))
+
+    from ui.resources.styles import GLOBAL_STYLE
+    app.setStyleSheet(GLOBAL_STYLE)
 
     # Инициализация базы данных
     db_manager = DBManager('database/kaban.db')

@@ -1,13 +1,16 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                              QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
                              QLineEdit, QComboBox, QMessageBox, QFileDialog, QDateEdit, QDialog)
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QSize, QDate
 
 from controllers import ProjectController, ExportController
 from models import DBManager
 from ui.dialogs.new_project_dialog import NewProjectDialog
 from ui.dialogs.project_dialog import ProjectDialog
+from ui.widgets.tab_page import TabPage
+from ui.widgets.page_header import FilterPanel
+from ui.resources.icon_helper import get_icon
 
 
 class ProjectsTab(QWidget):
@@ -23,34 +26,24 @@ class ProjectsTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        """
-        Инициализация интерфейса
-        """
-        # Основной layout
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(20)
+        page = TabPage('Проекты', 'Управление проектами и дедлайнами')
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(page)
+        main_layout = page.content_layout
 
-        # Заголовок
-        header_layout = QHBoxLayout()
-
-        title_label = QLabel("Управление проектами")
-        title_label.setFont(QFont('Arial', 16, QFont.Bold))
-        header_layout.addWidget(title_label)
-
-        main_layout.addLayout(header_layout)
-
-        # Панель поиска и фильтрации
-        filter_layout = QHBoxLayout()
+        filter_panel = FilterPanel()
+        fl = filter_panel.layout()
 
         search_label = QLabel("Поиск:")
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Введите название проекта или клиента")
+        self.search_input.setPlaceholderText("Название проекта или клиент")
+        self.search_input.setMinimumWidth(200)
         self.search_input.textChanged.connect(self.apply_filters)
 
         client_label = QLabel("Клиент:")
         self.client_combo = QComboBox()
-        self.client_combo.setMinimumWidth(200)
+        self.client_combo.setMinimumWidth(160)
         self.client_combo.addItem("Все", "")
 
         date_label = QLabel("Дедлайн:")
@@ -65,17 +58,11 @@ class ProjectsTab(QWidget):
         self.date_to.setDate(QDate.currentDate().addMonths(12))
         self.date_to.dateChanged.connect(self.apply_filters)
 
-        filter_layout.addWidget(search_label)
-        filter_layout.addWidget(self.search_input)
-        filter_layout.addWidget(client_label)
-        filter_layout.addWidget(self.client_combo)
-        filter_layout.addWidget(date_label)
-        filter_layout.addWidget(self.date_from)
-        filter_layout.addWidget(date_to_label)
-        filter_layout.addWidget(self.date_to)
-        filter_layout.addStretch()
-
-        main_layout.addLayout(filter_layout)
+        for w in [search_label, self.search_input, client_label, self.client_combo,
+                  date_label, self.date_from, date_to_label, self.date_to]:
+            fl.addWidget(w)
+        fl.addStretch()
+        main_layout.addWidget(filter_panel)
 
         # Таблица проектов
         self.projects_table = QTableWidget()
@@ -95,25 +82,25 @@ class ProjectsTab(QWidget):
         buttons_layout = QHBoxLayout()
 
         self.add_button = QPushButton("Добавить")
-        self.add_button.setIcon(QIcon('ui/resources/icons/add.png'))
+        self.add_button.setIcon(get_icon('add'))
         print("Подключаем обработчик к кнопке Добавить")
         self.add_button.clicked.connect(self.add_item)
 
         self.edit_button = QPushButton("Редактировать")
-        self.edit_button.setIcon(QIcon('ui/resources/icons/edit.png'))
+        self.edit_button.setIcon(get_icon('edit'))
         self.edit_button.clicked.connect(self.edit_item)
 
         self.delete_button = QPushButton("Удалить")
-        self.delete_button.setIcon(QIcon('ui/resources/icons/delete.png'))
+        self.delete_button.setIcon(get_icon('delete'))
         self.delete_button.setObjectName("error")
         self.delete_button.clicked.connect(self.delete_item)
 
         self.refresh_button = QPushButton("Обновить")
-        self.refresh_button.setIcon(QIcon('ui/resources/icons/refresh.png'))
+        self.refresh_button.setIcon(get_icon('refresh'))
         self.refresh_button.clicked.connect(self.refresh_data)
 
         self.export_button = QPushButton("Экспорт")
-        self.export_button.setIcon(QIcon('ui/resources/icons/export.png'))
+        self.export_button.setIcon(get_icon('export'))
         self.export_button.clicked.connect(self.export_to_csv)
 
         buttons_layout.addWidget(self.add_button)

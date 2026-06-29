@@ -1,12 +1,14 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
                             QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
                             QLineEdit, QComboBox, QMessageBox, QFileDialog)
-from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import Qt, QSize, QCoreApplication
 
 from controllers import DeveloperController, ExportController
 from ui.dialogs.developer_dialog import DeveloperDialog
 from ui.dialogs.new_developer_dialog import NewDeveloperDialog
+from ui.widgets.tab_page import TabPage
+from ui.widgets.page_header import FilterPanel
+from ui.resources.icon_helper import get_icon
 
 
 class DevelopersTab(QWidget):
@@ -22,52 +24,37 @@ class DevelopersTab(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        """
-        Инициализация интерфейса
-        """
         try:
             print("Инициализация интерфейса DeveloperDialog")
-            # Основной layout
-            main_layout = QVBoxLayout(self)
-            main_layout.setContentsMargins(20, 20, 20, 20)
-            main_layout.setSpacing(20)
+            page = TabPage('Разработчики', 'Команда и ставки')
+            outer = QVBoxLayout(self)
+            outer.setContentsMargins(0, 0, 0, 0)
+            outer.addWidget(page)
+            main_layout = page.content_layout
 
-            # Заголовок
-            header_layout = QHBoxLayout()
-
-            title_label = QLabel("Управление разработчиками")
-            title_label.setFont(QFont('Arial', 16, QFont.Bold))
-            header_layout.addWidget(title_label)
-
-            main_layout.addLayout(header_layout)
-
-            # Панель поиска и фильтрации
-            filter_layout = QHBoxLayout()
+            filter_panel = FilterPanel()
+            fl = filter_panel.layout()
 
             search_label = QLabel("Поиск:")
             self.search_input = QLineEdit()
-            self.search_input.setPlaceholderText("Введите имя разработчика")
+            self.search_input.setPlaceholderText("Имя разработчика")
+            self.search_input.setMinimumWidth(220)
             self.search_input.textChanged.connect(self.apply_filters)
 
             position_label = QLabel("Должность:")
             self.position_combo = QComboBox()
+            self.position_combo.setMinimumWidth(180)
             self.position_combo.addItem("Все", "")
-
-            # Получение списка должностей
             positions_result = self.developer_controller.get_developer_positions()
             if positions_result['success']:
                 for position in positions_result['data']:
                     self.position_combo.addItem(position, position)
-
             self.position_combo.currentIndexChanged.connect(self.apply_filters)
 
-            filter_layout.addWidget(search_label)
-            filter_layout.addWidget(self.search_input)
-            filter_layout.addWidget(position_label)
-            filter_layout.addWidget(self.position_combo)
-            filter_layout.addStretch()
-
-            main_layout.addLayout(filter_layout)
+            for w in [search_label, self.search_input, position_label, self.position_combo]:
+                fl.addWidget(w)
+            fl.addStretch()
+            main_layout.addWidget(filter_panel)
 
             # Таблица разработчиков
             self.developers_table = QTableWidget()
@@ -87,24 +74,24 @@ class DevelopersTab(QWidget):
             buttons_layout = QHBoxLayout()
 
             self.add_button = QPushButton("Добавить")
-            self.add_button.setIcon(QIcon('ui/resources/icons/add.png'))
+            self.add_button.setIcon(get_icon('add'))
             self.add_button.clicked.connect(self.add_item)
 
             self.edit_button = QPushButton("Редактировать")
-            self.edit_button.setIcon(QIcon('ui/resources/icons/edit.png'))
+            self.edit_button.setIcon(get_icon('edit'))
             self.edit_button.clicked.connect(self.edit_item)
 
             self.delete_button = QPushButton("Удалить")
-            self.delete_button.setIcon(QIcon('ui/resources/icons/delete.png'))
+            self.delete_button.setIcon(get_icon('delete'))
             self.delete_button.setObjectName("error")
             self.delete_button.clicked.connect(self.delete_item)
 
             self.refresh_button = QPushButton("Обновить")
-            self.refresh_button.setIcon(QIcon('ui/resources/icons/refresh.png'))
+            self.refresh_button.setIcon(get_icon('refresh'))
             self.refresh_button.clicked.connect(self.refresh_data)
 
             self.export_button = QPushButton("Экспорт")
-            self.export_button.setIcon(QIcon('ui/resources/icons/export.png'))
+            self.export_button.setIcon(get_icon('export'))
             self.export_button.clicked.connect(self.export_to_csv)
 
             buttons_layout.addWidget(self.add_button)

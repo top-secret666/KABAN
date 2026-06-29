@@ -1,11 +1,14 @@
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, 
                             QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
                             QLineEdit, QComboBox, QMessageBox, QFileDialog)
-from PyQt5.QtGui import QIcon, QFont, QColor
+from PyQt5.QtGui import QFont, QColor
 from PyQt5.QtCore import Qt, QSize
 
 from controllers import TaskController, ProjectController, DeveloperController, ExportController
 from ui.dialogs.task_dialog import TaskDialog
+from ui.widgets.tab_page import TabPage
+from ui.widgets.page_header import FilterPanel
+from ui.resources.icon_helper import get_icon
 
 class TasksTab(QWidget):
     """
@@ -29,65 +32,46 @@ class TasksTab(QWidget):
 
 
     def init_ui(self):
-        """
-        Инициализация интерфейса
-        """
-        # Основной layout
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(20, 20, 20, 20)
-        main_layout.setSpacing(20)
-        
-        # Заголовок
-        header_layout = QHBoxLayout()
-        
-        title_label = QLabel("Управление задачами")
-        title_label.setFont(QFont('Arial', 16, QFont.Bold))
-        header_layout.addWidget(title_label)
-        
-        main_layout.addLayout(header_layout)
-        
-        # Панель поиска и фильтрации
-        filter_layout = QHBoxLayout()
-        
+        page = TabPage('Задачи', 'Управление задачами и статусами')
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.addWidget(page)
+        main_layout = page.content_layout
+
+        filter_panel = FilterPanel()
+        fl = filter_panel.layout()
+
         search_label = QLabel("Поиск:")
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Введите описание задачи")
+        self.search_input.setMinimumWidth(200)
         self.search_input.textChanged.connect(self.apply_filters)
-        
+
         project_label = QLabel("Проект:")
         self.project_combo = QComboBox()
-        self.project_combo.setMinimumWidth(200)
+        self.project_combo.setMinimumWidth(180)
         self.project_combo.addItem("Все", "")
         self.project_combo.currentIndexChanged.connect(self.apply_filters)
         self.developer_label = QLabel("Разработчик:")
         self.developer_combo = QComboBox()
-        self.developer_combo.setMinimumWidth(200)
+        self.developer_combo.setMinimumWidth(180)
         self.developer_combo.addItem("Все", "")
         self.developer_combo.currentIndexChanged.connect(self.apply_filters)
-        
+
         status_label = QLabel("Статус:")
         self.status_combo = QComboBox()
         self.status_combo.addItem("Все", "")
-        
-        # Получение списка статусов
         statuses_result = self.task_controller.get_task_statuses()
         if statuses_result['success']:
             for status in statuses_result['data']:
                 self.status_combo.addItem(status, status)
-        
         self.status_combo.currentIndexChanged.connect(self.apply_filters)
-        
-        filter_layout.addWidget(search_label)
-        filter_layout.addWidget(self.search_input)
-        filter_layout.addWidget(project_label)
-        filter_layout.addWidget(self.project_combo)
-        filter_layout.addWidget(self.developer_label)
-        filter_layout.addWidget(self.developer_combo)
-        filter_layout.addWidget(status_label)
-        filter_layout.addWidget(self.status_combo)
-        filter_layout.addStretch()
-        
-        main_layout.addLayout(filter_layout)
+
+        for w in [search_label, self.search_input, project_label, self.project_combo,
+                  self.developer_label, self.developer_combo, status_label, self.status_combo]:
+            fl.addWidget(w)
+        fl.addStretch()
+        main_layout.addWidget(filter_panel)
         
         # Таблица задач
         self.tasks_table = QTableWidget()
@@ -107,24 +91,24 @@ class TasksTab(QWidget):
         buttons_layout = QHBoxLayout()
         
         self.add_button = QPushButton("Добавить")
-        self.add_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        self.add_button.setIcon(get_icon('add'))
         self.add_button.clicked.connect(self.add_item)
-        
+
         self.edit_button = QPushButton("Редактировать")
-        self.edit_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        self.edit_button.setIcon(get_icon('edit'))
         self.edit_button.clicked.connect(self.edit_item)
-        
+
         self.delete_button = QPushButton("Удалить")
-        self.delete_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        self.delete_button.setIcon(get_icon('delete'))
         self.delete_button.setObjectName("error")
         self.delete_button.clicked.connect(self.delete_item)
-        
+
         self.refresh_button = QPushButton("Обновить")
-        self.refresh_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        self.refresh_button.setIcon(get_icon('refresh'))
         self.refresh_button.clicked.connect(self.refresh_data)
-        
+
         self.export_button = QPushButton("Экспорт")
-        self.export_button.setIcon(QIcon('ui/resources/icons/logo.png'))
+        self.export_button.setIcon(get_icon('export'))
         self.export_button.clicked.connect(self.export_to_csv)
         
         buttons_layout.addWidget(self.add_button)
