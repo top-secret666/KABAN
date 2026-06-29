@@ -9,6 +9,7 @@ from ui.dialogs.task_dialog import TaskDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
 from ui.resources.icon_helper import get_icon
+from ui.resources.table_helper import configure_table, apply_task_row_colors
 
 class TasksTab(QWidget):
     """
@@ -75,13 +76,12 @@ class TasksTab(QWidget):
         
         # Таблица задач
         self.tasks_table = QTableWidget()
-        self.tasks_table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.tasks_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.tasks_table.setAlternatingRowColors(True)
+        configure_table(self.tasks_table)
+        self.tasks_table.setProperty('task_status_col', 4)
+        self.tasks_table.setProperty('task_num_cols', 7)
         self.tasks_table.setColumnCount(7)
         self.tasks_table.setHorizontalHeaderLabels(["ID", "Проект", "Разработчик", "Описание", "Статус", "Часы", "Дата создания"])
         self.tasks_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.tasks_table.verticalHeader().setVisible(False)
         self.tasks_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tasks_table.doubleClicked.connect(self.edit_item)
         
@@ -253,19 +253,7 @@ class TasksTab(QWidget):
                     self.tasks_table.setItem(i, 5, hours_item)
                     self.tasks_table.setItem(i, 6, created_item)
 
-                    # Установка цвета фона в зависимости от статуса
-                    status_color = {
-                        'новая': '#E3F2FD',
-                        'в работе': '#FFF8E1',
-                        'на проверке': '#F3E5F5',
-                        'завершено': '#E8F5E9'
-                    }.get(task.status, '#FFFFFF')
-
-                    # Устанавливаем цвет фона только для созданных ячеек (столбцы 0-6)
-                    for col in range(7):  # Используем 7 вместо self.tasks_table.columnCount()
-                        item = self.tasks_table.item(i, col)
-                        if item:  # Проверяем, что элемент существует
-                            item.setBackground(QColor(status_color))
+            apply_task_row_colors(self.tasks_table, status_col=4, num_cols=7)
         except Exception as e:
             print(f"Ошибка при обновлении таблицы: {e}")
 

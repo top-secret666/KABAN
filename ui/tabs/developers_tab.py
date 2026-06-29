@@ -9,6 +9,7 @@ from ui.dialogs.new_developer_dialog import NewDeveloperDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
 from ui.resources.icon_helper import get_icon
+from ui.resources.table_helper import configure_table
 
 
 class DevelopersTab(QWidget):
@@ -58,13 +59,10 @@ class DevelopersTab(QWidget):
 
             # Таблица разработчиков
             self.developers_table = QTableWidget()
-            self.developers_table.setSelectionBehavior(QAbstractItemView.SelectRows)
-            self.developers_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-            self.developers_table.setAlternatingRowColors(True)
+            configure_table(self.developers_table)
             self.developers_table.setColumnCount(4)
             self.developers_table.setHorizontalHeaderLabels(["ID", "ФИО", "Должность", "Ставка в час"])
             self.developers_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-            self.developers_table.verticalHeader().setVisible(False)
             self.developers_table.setContextMenuPolicy(Qt.CustomContextMenu)
             self.developers_table.doubleClicked.connect(self.edit_item)
 

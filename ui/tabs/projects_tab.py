@@ -11,6 +11,7 @@ from ui.dialogs.project_dialog import ProjectDialog
 from ui.widgets.tab_page import TabPage
 from ui.widgets.page_header import FilterPanel
 from ui.resources.icon_helper import get_icon
+from ui.resources.table_helper import configure_table
 
 
 class ProjectsTab(QWidget):
@@ -66,13 +67,10 @@ class ProjectsTab(QWidget):
 
         # Таблица проектов
         self.projects_table = QTableWidget()
-        self.projects_table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.projects_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.projects_table.setAlternatingRowColors(True)
+        configure_table(self.projects_table)
         self.projects_table.setColumnCount(6)
         self.projects_table.setHorizontalHeaderLabels(["ID", "Название", "Клиент", "Дедлайн", "Бюджет", "Статус"])
         self.projects_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.projects_table.verticalHeader().setVisible(False)
         self.projects_table.setContextMenuPolicy(Qt.CustomContextMenu)
         self.projects_table.doubleClicked.connect(self.edit_item)
 
