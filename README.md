@@ -38,47 +38,91 @@ If you’re a recruiter: this repo is mostly about **SQL schema design** + **Pyt
 
 ---
 
-## Quickstart
-### 1) Create DB from SQL
-```bash
-python database/init_db.py
-```
-What it does:
-- reads `database/kaban.sql`
-- creates `database/kabanmanagement_it-projects.sqlite`
-- prints tables + row counts
+## Screenshots
 
-### 2) Run tests
-```bash
-python -m unittest src.tests.db
-```
-Tests include:
-- tables/views exist
-- seed data present
-- foreign keys are consistent
-- triggers prevent duplicates and update existing rows
+> Drop PNG files into `docs/screenshots/` using the names below — they will show up here automatically.
+
+| Dashboard (Kanban) | Tasks |
+| :---: | :---: |
+| ![Dashboard](docs/screenshots/01-dashboard.png) | ![Tasks](docs/screenshots/02-tasks.png) |
+
+| Projects | Reports |
+| :---: | :---: |
+| ![Projects](docs/screenshots/03-projects.png) | ![Reports](docs/screenshots/04-reports.png) |
+
+<details>
+<summary>Theme settings (optional)</summary>
+
+![Settings](docs/screenshots/05-settings.png)
+
+</details>
+
+### What to capture
+
+| File | Screen | What to show |
+|------|--------|--------------|
+| `01-dashboard.png` | Dashboard | Kanban with cards in every column, stats, notifications |
+| `02-tasks.png` | Tasks | Populated table, filters |
+| `03-projects.png` | Projects | Project list with data |
+| `04-reports.png` | Reports | Generated report or analytics tab |
+| `05-settings.png` | Settings | Theme / accent color picker |
 
 ---
 
-## Database Diagram
-Open: `docs/BD_diagram.png`
+## Features
+
+- **Kanban dashboard** — task board by status, quick cards, add tasks
+- **Task management** — CRUD, filtering, link to project and developer
+- **Projects & developers** — clients, deadlines, hourly rates
+- **Reports & export** — overdue tasks, analytics, CSV / Excel export
+- **Notifications** — deadline and overdue project alerts
+- **User roles** — admin, manager, developer (different tab sets)
+- **Themes** — light / dark mode, customizable accent color
+- **Authentication** — login, registration, admin panel
 
 ---
 
-## Example Queries
-A few “quick loot” queries you can try (after initialization):
+## Quick Start
+
+### Requirements
+
+- Python 3.10+
+- Windows / Linux / macOS
+
+### Install & run
+
+```bash
+git clone https://github.com/top-secret666/KABAN.git
+cd KABAN
+pip install -r requirements.txt
+python main.py
+```
+
+On first launch, `database/kaban.db` is created automatically from `database/kaban.sql`.
+
+### Default accounts
+
+| Login | Password | Role |
+|-------|----------|------|
+| `admin` | `admin` | Administrator |
+| `manager` | `password123` | Manager |
+| `developer1` | `password123` | Developer |
+
+---
+## Database
+
+Schema: `developers`, `projects`, `tasks`, `users`, `notifications` tables + analytics views.
+
+- `database/kaban.sql` — full schema, triggers, demo data
+- `database/init_db.py` — manual DB initialization
+- `docs/er-диаграмма-kaban_manager.mermaid` — ER diagram
+
+Sample queries:
 
 ```sql
--- Tasks with project + developer details
 SELECT * FROM view_task_details LIMIT 10;
-
--- Project progress and costs
 SELECT * FROM view_project_stats ORDER BY completion_percentage DESC;
-
--- Developer workload and earnings
-SELECT * FROM view_developer_stats ORDER BY total_earnings DESC;
 ```
-
 ---
 
 ## Notes
