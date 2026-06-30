@@ -131,6 +131,12 @@ SELECT * FROM view_project_stats ORDER BY completion_percentage DESC;
 
 ---
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
 <div align="center">
 
 good luck ;)
