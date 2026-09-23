@@ -1,12 +1,20 @@
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
 .pytest_cache/
+
+# IDE / tools
 .idea/
+qodana.yaml
+
+# Runtime / local data
+*.db
+*.sqlite
 *.db-journal
 app_log.txt
+
+# Exports
 *.xlsx
 *.csv
 !docs/
-kaban.db
-database/kaban.db
