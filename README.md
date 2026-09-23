@@ -5,7 +5,7 @@
 
 KABANchik
 
-**A small Kanban/IT-project management database + Python init/tests (SQLite).**
+**A small Kanban/STUDY-IT-project management database + Python init/tests (SQLite).**
 
 </div>
 
